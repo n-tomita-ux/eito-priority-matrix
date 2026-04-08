@@ -174,7 +174,7 @@ tr:hover td{background:#F9F8F6}
       <div class="step"><div class="step-num">2</div><div>キャンバスの番号付き点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
       <div class="step"><div class="step-num">3</div><div>一覧で担当者・期限を設定。タスク名は<b>ダブルクリック</b>で編集できる。</div></div>
       <div class="step"><div class="step-num">4</div><div>期限を設定すると残り日数に応じて緊急度が自動調整される（当日100・1日前90・2日前80・3〜5日前60）。</div></div>
-      <div class="step"><div class="step-num">5</div><div>タスクが完了したら「✅ 完了」ボタンを押す。作成日・完了日・経過日数がスプシに自動記録される。</div></div>
+      <div class="step"><div class="step-num">5</div><div>タスクが完了したら「✅ 完了」ボタンを押す。期限に対する評価も含めてスプシに自動記録される。</div></div>
       <h3>4つの象限</h3>
       <ul>
         <li>🔥 <b>今すぐやる</b>…緊急かつ重要。すぐに自分で対応</li>
@@ -182,13 +182,12 @@ tr:hover td{background:#F9F8F6}
         <li>🤝 <b>誰かに任せる</b>…緊急・重要でない。誰かに依頼</li>
         <li>⏸️ <b>後回し</b>…急ぎでも重要でもない。余裕があれば</li>
       </ul>
-      <h3>期限による緊急度の自動調整</h3>
+      <h3>期限と評価</h3>
       <ul>
-        <li>当日・期限切れ → 緊急度 100（🔴）</li>
-        <li>1日前 → 緊急度 90（🟠）</li>
-        <li>2日前 → 緊急度 80（🟡）</li>
-        <li>3〜5日前 → 緊急度 60（🟡）</li>
-        <li>6日以上・期限なし → そのまま</li>
+        <li>期限前に完了 → 通常（100%）</li>
+        <li>期限当日に完了 → 🟠 オレンジ（50%）</li>
+        <li>期限切れで完了 → 🔴 赤（30%）</li>
+        <li>期限なしで完了 → 通常（100%）</li>
       </ul>
       <h3>実績・経験値</h3>
       <p>ヘッダーの「📊 実績」からスプシの完了ログを確認できる。誰がいつ何日でタスクを完了したかが積み上がっていく。</p>
@@ -213,7 +212,6 @@ function getQ(u,i){return u>=50&&i>=50?Q.A:u<50&&i>=50?Q.B:u>=50&&i<50?Q.C:Q.D}
 function calcScore(u,i){return Math.round(u*0.45+i*0.55)}
 function nowStr(){return new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})}
 
-// 期限から残り日数を計算（当日=0、過去=負）
 function calcDaysLeft(deadline){
   if(!deadline)return null;
   var today=new Date();today.setHours(0,0,0,0);
@@ -221,7 +219,6 @@ function calcDaysLeft(deadline){
   return Math.floor((d-today)/(1000*60*60*24));
 }
 
-// 期限に応じた緊急度を返す（期限なしはnull）
 function deadlineUrgency(deadline){
   var days=calcDaysLeft(deadline);
   if(days===null)return null;
@@ -232,7 +229,6 @@ function deadlineUrgency(deadline){
   return null;
 }
 
-// 期限バッジのスタイルクラスと表示テキスト
 function deadlineBadge(deadline){
   var days=calcDaysLeft(deadline);
   if(days===null)return null;
@@ -246,7 +242,15 @@ function deadlineBadge(deadline){
   return{cls:cls,label:label};
 }
 
-// 全タスクに期限による緊急度を適用
+// 完了時の評価を判定
+function calcEvaluation(deadline){
+  if(!deadline)return{label:'通常',rate:100};
+  var days=calcDaysLeft(deadline);
+  if(days===0)return{label:'期限当日完了',rate:50};
+  if(days<0)return{label:'期限切れ完了',rate:30};
+  return{label:'通常',rate:100};
+}
+
 function applyDeadlineUrgency(){
   Object.values(db.projects).forEach(function(p){
     (p.tasks||[]).forEach(function(t){
@@ -348,7 +352,6 @@ function setDeadline(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});
   if(!task)return;
   task.deadline=val;
-  // 即座に緊急度を反映
   var u=deadlineUrgency(val);
   if(u!==null)task.u=u;
   renderDots();renderList();scheduleSave();
@@ -396,11 +399,26 @@ function completeTask(id){
     var diff=Math.floor((new Date()-created)/(1000*60*60*24));
     elapsedDays=diff;
   }
-  var log={project:currentProject,name:task.name,assignee:task.assignee||'未定',createdAt:task.createdAt||'-',completedAt:now,elapsedDays:elapsedDays,u:task.u,i:task.i,score:calcScore(task.u,task.i)};
+  var evaluation=calcEvaluation(task.deadline);
+  var log={
+    project:currentProject,
+    name:task.name,
+    assignee:task.assignee||'未定',
+    createdAt:task.createdAt||'-',
+    deadline:task.deadline||'-',
+    completedAt:now,
+    elapsedDays:elapsedDays,
+    evaluation:evaluation.label,
+    evaluationRate:evaluation.rate,
+    u:task.u,
+    i:task.i,
+    score:calcScore(task.u,task.i)
+  };
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',log:log})});
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
   renderDots();renderList();scheduleSave();
-  showToast('✅ 「'+task.name+'」を完了しました（'+elapsedDays+'日）');
+  var evalMsg=evaluation.rate<100?' (評価'+evaluation.rate+'%)':'';
+  showToast('✅ 「'+task.name+'」を完了しました（'+elapsedDays+'日）'+evalMsg);
 }
 
 function setAssignee(id,val){
