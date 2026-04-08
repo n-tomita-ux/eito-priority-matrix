@@ -239,7 +239,7 @@ function drawGrid(){
   ctx.textAlign='left';ctx.fillText('低',iX+3,iY+iH+8);
   ctx.textAlign='right';ctx.fillText('高',iX+iW-3,iY+iH+8);
   ctx.fillStyle='rgba(40,40,40,.70)';ctx.font='12px -apple-system,sans-serif';
-  ctx.save();ctx.translate(iX-LPAD/2,iY+iH/2);ctx.rotate(-Math.PI/2);
+  ctx.save();ctx.translate(16,iY+iH/2);ctx.rotate(-Math.PI/2);
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↑ 重 要 度 ↓',0,0);ctx.restore();
   ctx.fillStyle='rgba(40,40,40,.55)';ctx.font='11px -apple-system,sans-serif';
   ctx.textAlign='right';ctx.fillText('高',iX-6,iY+10);
