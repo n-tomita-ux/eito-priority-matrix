@@ -12,18 +12,21 @@ body{font-family:-apple-system,'Hiragino Sans','Yu Gothic',sans-serif;background
 .logo{width:32px;height:32px;background:#1A1A18;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
 .header-title{font-size:16px;font-weight:600;color:#1A1A18}
 .header-subtitle{font-size:12px;color:#6B6860;margin-top:1px}
-.header-right{display:flex;align-items:center;gap:10px}
+.header-right{display:flex;align-items:center;gap:8px}
 .sync-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:#6B6860;padding:4px 12px;border-radius:20px;border:1.5px solid #C8C4BE;background:#EDECEA}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#bbb;transition:background .3s}
 .sync-dot.ok{background:#1E9E76}.sync-dot.error{background:#E05C32}.sync-dot.loading{background:#F0A500;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.help-btn{padding:5px 14px;font-size:12px;font-weight:600;border:1.5px solid #C8C4BE;border-radius:20px;background:#fff;color:#4A4844;cursor:pointer;font-family:inherit}
-.help-btn:hover{background:#EDECEA;border-color:#888}
+.header-btn{padding:5px 14px;font-size:12px;font-weight:600;border:1.5px solid #C8C4BE;border-radius:20px;background:#fff;color:#4A4844;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.header-btn:hover{background:#EDECEA;border-color:#888}
+.header-btn.green{border-color:#1E9E76;color:#095041;background:#BEEFD8}
+.header-btn.green:hover{background:#9FE1CB}
 .project-bar{background:#fff;border-bottom:1.5px solid #C8C4BE;padding:10px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .project-label{font-size:12px;color:#6B6860;white-space:nowrap;font-weight:500}
 .project-select{font-size:13px;font-weight:500;color:#1A1A18;background:#EDECEA;border:1.5px solid #C8C4BE;border-radius:8px;padding:5px 10px;cursor:pointer;outline:none;min-width:160px}
-.btn-new-proj{font-size:12px;color:#6B6860;background:none;border:1.5px dashed #C8C4BE;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:inherit}
-.btn-new-proj:hover{border-color:#888;color:#1A1A18}
+.btn-sm{font-size:12px;color:#6B6860;background:none;border:1.5px solid #C8C4BE;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:inherit}
+.btn-sm:hover{border-color:#888;color:#1A1A18}
+.btn-sm.dashed{border-style:dashed}
 .toolbar{background:#fff;border-bottom:1.5px solid #C8C4BE;padding:10px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .task-input{flex:1;min-width:160px;padding:7px 12px;font-size:13px;border:1.5px solid #C8C4BE;border-radius:8px;background:#EDECEA;color:#1A1A18;outline:none;font-family:inherit}
 .task-input:focus{border-color:#888;background:#fff}
@@ -38,16 +41,21 @@ canvas{display:block}
 .dot-label{position:absolute;font-size:10px;white-space:nowrap;pointer-events:none;background:#fff;border:1px solid #C8C4BE;border-radius:4px;padding:2px 5px;color:#4A4844;transform:translateX(-50%);top:16px;left:50%;font-weight:500}
 .list-wrap{background:#fff;border-radius:16px;border:1.5px solid #C8C4BE;overflow:hidden}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:8px 12px;color:#4A4844;font-weight:600;border-bottom:1.5px solid #C8C4BE;font-size:12px;background:#F5F4F0}
-td{padding:7px 12px;border-bottom:1px solid #E0DDD8;color:#272724;vertical-align:middle}
+th{text-align:left;padding:8px 12px;color:#4A4844;font-weight:600;border-bottom:1.5px solid #C8C4BE;font-size:11px;background:#F5F4F0;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #E0DDD8;color:#272724;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#F9F8F6}
-.score-wrap{display:flex;align-items:center;gap:6px}
-.score-bar-bg{flex:1;height:7px;background:#E0DDD8;border-radius:4px;overflow:hidden;max-width:80px}
-.q-badge{display:inline-block;font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;border:1px solid}
-.assignee-select{font-size:12px;color:#272724;background:#F5F4F0;border:1px solid #C8C4BE;border-radius:6px;padding:3px 6px;cursor:pointer;outline:none;font-family:inherit;max-width:80px}
-.assignee-select:focus{border-color:#888}
-.del-btn{background:none;border:none;cursor:pointer;color:#bbb;font-size:16px;padding:0 4px;line-height:1}
+.task-name{cursor:pointer;border-radius:4px;padding:2px 4px;margin:-2px -4px;transition:background .15s}
+.task-name:hover{background:#EDECEA}
+.task-name-input{font-size:13px;font-family:inherit;color:#1A1A18;background:#fff;border:1.5px solid #7C73DE;border-radius:6px;padding:3px 7px;outline:none;width:100%;min-width:100px}
+.score-wrap{display:flex;align-items:center;gap:5px}
+.score-bar-bg{width:50px;height:6px;background:#E0DDD8;border-radius:3px;overflow:hidden;flex-shrink:0}
+.q-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;border:1px solid;white-space:nowrap}
+.assignee-select{font-size:12px;color:#272724;background:#F5F4F0;border:1px solid #C8C4BE;border-radius:6px;padding:3px 5px;cursor:pointer;outline:none;font-family:inherit;max-width:72px}
+.created-at{font-size:10px;color:#9A9893;white-space:nowrap}
+.done-btn{padding:3px 8px;font-size:11px;font-weight:600;border:1.5px solid #1E9E76;border-radius:6px;background:#BEEFD8;color:#095041;cursor:pointer;font-family:inherit;white-space:nowrap}
+.done-btn:hover{background:#9FE1CB}
+.del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;padding:0 3px;line-height:1}
 .del-btn:hover{color:#E05C32}
 .toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:#1A1A18;color:#fff;font-size:13px;padding:10px 22px;border-radius:24px;opacity:0;transform:translateY(10px);white-space:nowrap;animation:toastIn .25s forwards,toastOut .25s 2.5s forwards}
@@ -63,8 +71,7 @@ tr:hover td{background:#F9F8F6}
 .btn{font-size:13px;font-weight:600;padding:8px 20px;border-radius:10px;border:none;cursor:pointer;font-family:inherit}
 .btn-primary{background:#1A1A18;color:#fff}
 .btn-secondary{background:#EDECEA;color:#4A4844;border:1.5px solid #C8C4BE}
-/* ヘルプモーダル */
-.help-modal{width:420px;max-width:90vw}
+.help-modal{width:440px;max-width:92vw}
 .help-body{font-size:13px;line-height:1.7;color:#272724}
 .help-body h3{font-size:13px;font-weight:700;margin:14px 0 4px;color:#1A1A18}
 .help-body p{margin-bottom:6px;color:#4A4844}
@@ -76,7 +83,7 @@ tr:hover td{background:#F9F8F6}
 .loading-spinner{width:36px;height:36px;border:3px solid #C8C4BE;border-top-color:#1A1A18;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:13px;color:#6B6860}
-@media(max-width:600px){.main{padding:10px}th:nth-child(3),th:nth-child(4),td:nth-child(3),td:nth-child(4){display:none}}
+@media(max-width:650px){.main{padding:10px}th.hide-sp,td.hide-sp{display:none}}
 </style>
 </head>
 <body>
@@ -86,7 +93,8 @@ tr:hover td{background:#F9F8F6}
 <div class="header">
   <div class="header-left"><div class="logo">E</div><div><div class="header-title">優先度マトリクス</div><div class="header-subtitle">有限会社栄都工業</div></div></div>
   <div class="header-right">
-    <button class="help-btn" onclick="openHelp()">？ 使い方</button>
+    <a class="header-btn green" href="https://docs.google.com/spreadsheets/d/1kJSLNs2PFeVdUzrmGENqGFhG2WljhJ1qvkTwGTL2Jko/edit" target="_blank">📊 実績</a>
+    <button class="header-btn" onclick="openHelp()">？ 使い方</button>
     <div class="sync-badge"><div class="sync-dot loading" id="syncDot"></div><span id="syncLabel">接続中...</span></div>
   </div>
 </div>
@@ -94,13 +102,14 @@ tr:hover td{background:#F9F8F6}
 <div class="project-bar">
   <span class="project-label">プロジェクト</span>
   <select class="project-select" id="projectSelect" onchange="switchProject()"></select>
-  <button class="btn-new-proj" onclick="openModal('project')">＋ 新規</button>
+  <button class="btn-sm" onclick="openRenameProject()">✏️ 名前変更</button>
+  <button class="btn-sm dashed" onclick="openModal('project')">＋ 新規</button>
 </div>
 
 <div class="toolbar">
   <input class="task-input" id="taskInput" placeholder="タスク名を入力してEnter…" />
   <button class="add-btn" id="addBtn">追加</button>
-  <span class="hint">点をドラッグして優先度を設定</span>
+  <span class="hint">点をドラッグ / タスク名はダブルクリックで編集</span>
 </div>
 
 <div class="main">
@@ -108,14 +117,15 @@ tr:hover td{background:#F9F8F6}
   <div class="list-wrap">
     <table>
       <thead><tr>
-        <th style="width:32px"></th>
+        <th style="width:28px"></th>
         <th>タスク</th>
-        <th style="width:52px">緊急度</th>
-        <th style="width:52px">重要度</th>
-        <th style="width:130px">優先スコア</th>
-        <th style="width:90px">担当者</th>
-        <th>象限</th>
-        <th style="width:32px"></th>
+        <th class="hide-sp" style="width:44px">緊急</th>
+        <th class="hide-sp" style="width:44px">重要</th>
+        <th style="width:110px">スコア</th>
+        <th style="width:76px">担当者</th>
+        <th class="hide-sp" style="width:90px">作成日</th>
+        <th style="width:60px">完了</th>
+        <th style="width:28px"></th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
@@ -124,26 +134,39 @@ tr:hover td{background:#F9F8F6}
 
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- プロジェクト新規モーダル -->
+<!-- プロジェクト新規 -->
 <div class="modal-overlay" id="modal-project" onclick="if(event.target===this)closeModal('project')">
   <div class="modal">
     <div class="modal-title">新規プロジェクト</div>
-    <input type="text" class="modal-input" id="modalInput" placeholder="プロジェクト名" onkeydown="if(event.key==='Enter')confirmModal()">
+    <input type="text" class="modal-input" id="modalInputProject" placeholder="プロジェクト名" onkeydown="if(event.key==='Enter')confirmNewProject()">
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('project')">キャンセル</button>
-      <button class="btn btn-primary" onclick="confirmModal()">作成</button>
+      <button class="btn btn-primary" onclick="confirmNewProject()">作成</button>
     </div>
   </div>
 </div>
 
-<!-- 使い方モーダル -->
+<!-- プロジェクト名変更 -->
+<div class="modal-overlay" id="modal-rename" onclick="if(event.target===this)closeModal('rename')">
+  <div class="modal">
+    <div class="modal-title">プロジェクト名を変更</div>
+    <input type="text" class="modal-input" id="modalInputRename" placeholder="新しいプロジェクト名" onkeydown="if(event.key==='Enter')confirmRenameProject()">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('rename')">キャンセル</button>
+      <button class="btn btn-primary" onclick="confirmRenameProject()">変更</button>
+    </div>
+  </div>
+</div>
+
+<!-- 使い方 -->
 <div class="modal-overlay" id="modal-help" onclick="if(event.target===this)closeHelp()">
   <div class="modal help-modal">
     <div class="modal-title">📊 使い方</div>
     <div class="help-body">
       <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。キャンバス中央に配置される。</div></div>
-      <div class="step"><div class="step-num">2</div><div>キャンバスの番号付き点をドラッグして配置。<br>右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
-      <div class="step"><div class="step-num">3</div><div>下の一覧で優先スコア（0〜100）と担当者を確認・設定。</div></div>
+      <div class="step"><div class="step-num">2</div><div>キャンバスの番号付き点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
+      <div class="step"><div class="step-num">3</div><div>一覧で担当者を設定。タスク名は<b>ダブルクリック</b>で編集できる。</div></div>
+      <div class="step"><div class="step-num">4</div><div>タスクが完了したら「✅ 完了」ボタンを押す。作成日・完了日・経過日数がスプシに自動記録される。</div></div>
       <h3>4つの象限</h3>
       <ul>
         <li>🔥 <b>今すぐやる</b>…緊急かつ重要。すぐに自分で対応</li>
@@ -151,8 +174,8 @@ tr:hover td{background:#F9F8F6}
         <li>🤝 <b>誰かに任せる</b>…緊急・重要でない。誰かに依頼</li>
         <li>⏸️ <b>後回し</b>…急ぎでも重要でもない。余裕があれば</li>
       </ul>
-      <h3>プロジェクト切り替え</h3>
-      <p>上部セレクターで案件ごとにタスクを管理。「＋新規」で追加できる。</p>
+      <h3>実績・経験値</h3>
+      <p>ヘッダーの「📊 実績」からスプシの完了ログを確認できる。誰がいつ何日でタスクを完了したかが積み上がっていく。</p>
     </div>
     <div class="modal-actions" style="margin-top:16px">
       <button class="btn btn-primary" onclick="closeHelp()">閉じる</button>
@@ -162,6 +185,7 @@ tr:hover td{background:#F9F8F6}
 
 <script>
 const GAS_URL='https://script.google.com/macros/s/AKfycbx5Sg_HgOEJdGmcaKZseqr4m7q5i73X-KLRL8ARTpcNR7bFTZ5hAlCaWLZUB3miTxUOKw/exec';
+const SS_URL='https://docs.google.com/spreadsheets/d/1kJSLNs2PFeVdUzrmGENqGFhG2WljhJ1qvkTwGTL2Jko/edit';
 const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}}});
 const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','その他','未定'];
 const Q={
@@ -172,11 +196,12 @@ const Q={
 };
 function getQ(u,i){return u>=50&&i>=50?Q.A:u<50&&i>=50?Q.B:u>=50&&i<50?Q.C:Q.D}
 function calcScore(u,i){return Math.round(u*0.45+i*0.55)}
+function nowStr(){return new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})}
+function dateStr(){return new Date().toLocaleDateString('ja-JP',{timeZone:'Asia/Tokyo'})}
 
 const W=Math.min(window.innerWidth-48,900);
 const H=Math.round(W*0.56);
-const PAD=50;
-const LPAD=30;
+const PAD=50;const LPAD=30;
 const canvas=document.getElementById('canvas');
 const wrap=document.getElementById('canvasWrap');
 canvas.width=W;canvas.height=H;wrap.style.width=W+'px';
@@ -207,26 +232,18 @@ function drawGrid(){
   ctx.beginPath();ctx.moveTo(iX,iY);ctx.lineTo(iX,iY+iH);ctx.lineTo(iX+iW,iY+iH);ctx.stroke();
   ctx.beginPath();ctx.moveTo(iX+iW/2,iY);ctx.lineTo(iX+iW/2,iY+iH);ctx.stroke();
   ctx.beginPath();ctx.moveTo(iX,iY+iH/2);ctx.lineTo(iX+iW,iY+iH/2);ctx.stroke();
-
-  // X軸ラベル
   ctx.fillStyle='rgba(40,40,40,.70)';ctx.font='12px -apple-system,sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';
   ctx.fillText('← 緊急でない　　緊急度　　緊急 →',iX+iW/2,iY+iH+8);
   ctx.fillStyle='rgba(40,40,40,.55)';ctx.font='11px -apple-system,sans-serif';
-  ctx.textAlign='left'; ctx.fillText('低',iX+3,iY+iH+8);
+  ctx.textAlign='left';ctx.fillText('低',iX+3,iY+iH+8);
   ctx.textAlign='right';ctx.fillText('高',iX+iW-3,iY+iH+8);
-
-  // Y軸ラベル（縦書き）
-  var label='↑ 重 要 度 ↓';
   ctx.fillStyle='rgba(40,40,40,.70)';ctx.font='12px -apple-system,sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.save();ctx.translate(iX-LPAD/2,iY+iH/2);ctx.rotate(-Math.PI/2);
-  ctx.fillText(label,0,0);
-  ctx.restore();
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↑ 重 要 度 ↓',0,0);ctx.restore();
   ctx.fillStyle='rgba(40,40,40,.55)';ctx.font='11px -apple-system,sans-serif';
-  ctx.textAlign='right';
-  ctx.fillText('高',iX-6,iY+10);
-  ctx.fillText('低',iX-6,iY+iH-10);
+  ctx.textAlign='right';ctx.fillText('高',iX-6,iY+10);
+  ctx.textAlign='right';ctx.fillText('低',iX-6,iY+iH-10);
 }
 
 function valToPx(u,i){var iX=PAD+LPAD,iY=PAD,iW=W-PAD-LPAD-PAD,iH=H-PAD*2;return{px:iX+u/100*iW,py:iY+(1-i/100)*iH};}
@@ -260,29 +277,73 @@ wrap.addEventListener('touchmove',function(e){
 window.addEventListener('mouseup',function(){if(dragging){dragging=null;scheduleSave();}});
 window.addEventListener('touchend',function(){if(dragging){dragging=null;scheduleSave();}});
 
+// タスク名インライン編集
+function startEditTaskName(id,td){
+  var task=currentTasks().find(function(t){return t.id===id;});
+  if(!task)return;
+  var inp=document.createElement('input');inp.className='task-name-input';inp.value=task.name;
+  td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+  function finish(){var val=inp.value.trim();if(val&&val!==task.name){task.name=val;scheduleSave();}renderList();renderDots();}
+  inp.addEventListener('blur',finish);
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderList();});
+}
+
 function renderList(){
   var tasks=currentTasks();
   var sorted=tasks.slice().sort(function(a,b){return calcScore(b.u,b.i)-calcScore(a.u,a.i);});
   document.getElementById('tbody').innerHTML=sorted.map(function(t,rank){
     var q=getQ(t.u,t.i);var score=calcScore(t.u,t.i);var idx=tasks.indexOf(t)+1;
     var dotSt='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+q.fill+';border:2px solid '+q.border+';color:'+q.text+';font-size:11px;font-weight:700';
-    var barSt='width:'+score+'%;background:'+q.border+';height:100%;border-radius:4px';
-    var numSt='color:'+q.text+';font-size:13px;font-weight:600;min-width:24px';
+    var barSt='width:'+score+'%;background:'+q.border+';height:100%;border-radius:3px';
+    var numSt='color:'+q.text+';font-size:12px;font-weight:700;min-width:22px';
     var badgeSt='background:'+q.fill+';border-color:'+q.border+';color:'+q.text;
-    var memberOpts=MEMBERS.map(function(m){
-      return '<option value="'+m+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';
-    }).join('');
+    var memberOpts=MEMBERS.map(function(m){return'<option value="'+m+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';}).join('');
+    var createdStr=t.createdAt?t.createdAt.slice(0,10):'-';
     return '<tr>'+
       '<td><span style="'+dotSt+'">'+idx+'</span></td>'+
-      '<td style="font-weight:'+(rank===0?'600':'400')+'">'+t.name+'</td>'+
-      '<td style="font-size:12px;color:#4A4844;font-weight:500">'+t.u+'</td>'+
-      '<td style="font-size:12px;color:#4A4844;font-weight:500">'+t.i+'</td>'+
+      '<td class="task-name-cell" data-id="'+t.id+'"><span class="task-name" title="ダブルクリックで編集" style="font-weight:'+(rank===0?'600':'400')+'">'+t.name+'</span></td>'+
+      '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.u+'</td>'+
+      '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.i+'</td>'+
       '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
       '<td><select class="assignee-select" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select></td>'+
-      '<td><span class="q-badge" style="'+badgeSt+'">'+q.label+'</span></td>'+
+      '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
+      '<td><button class="done-btn" onclick="completeTask('+t.id+')">✅ 完了</button></td>'+
       '<td><button class="del-btn" onclick="deleteTask('+t.id+')">×</button></td>'+
     '</tr>';
   }).join('');
+  document.querySelectorAll('.task-name-cell').forEach(function(td){
+    td.addEventListener('dblclick',function(){startEditTaskName(+td.dataset.id,td);});
+  });
+}
+
+// ✅ 完了処理
+function completeTask(id){
+  var task=currentTasks().find(function(t){return t.id===id;});
+  if(!task)return;
+  var now=nowStr();
+  var elapsedDays='-';
+  if(task.createdAt){
+    var created=new Date(task.createdAt.replace(/\//g,'-'));
+    var diff=Math.floor((new Date()-created)/(1000*60*60*24));
+    elapsedDays=diff;
+  }
+  var log={
+    project:currentProject,
+    name:task.name,
+    assignee:task.assignee||'未定',
+    createdAt:task.createdAt||'-',
+    completedAt:now,
+    elapsedDays:elapsedDays,
+    u:task.u,
+    i:task.i,
+    score:calcScore(task.u,task.i)
+  };
+  // スプシに送信
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',log:log})});
+  // タスクを削除して保存
+  db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
+  renderDots();renderList();scheduleSave();
+  showToast('✅ 「'+task.name+'」を完了しました（'+elapsedDays+'日）');
 }
 
 function setAssignee(id,val){
@@ -295,31 +356,42 @@ function renderProjectSelect(){
   sel.innerHTML=Object.keys(db.projects).map(function(n){return'<option value="'+n+'">'+n+'</option>';}).join('');
   sel.value=currentProject;
 }
-
 function switchProject(){
   currentProject=document.getElementById('projectSelect').value;
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
   renderDots();renderList();
 }
-
+function openRenameProject(){
+  var inp=document.getElementById('modalInputRename');inp.value=currentProject;
+  document.getElementById('modal-rename').classList.add('open');
+  setTimeout(function(){inp.focus();inp.select();},150);
+}
+function confirmRenameProject(){
+  var newName=document.getElementById('modalInputRename').value.trim();
+  if(!newName||newName===currentProject){closeModal('rename');return;}
+  if(db.projects[newName]){showToast('⚠️ 同じ名前のプロジェクトがあります');return;}
+  db.projects[newName]=db.projects[currentProject];
+  delete db.projects[currentProject];
+  currentProject=newName;
+  renderProjectSelect();scheduleSave();closeModal('rename');
+  showToast('✅ "'+newName+'" に変更しました');
+}
 function openModal(type){
   document.getElementById('modal-'+type).classList.add('open');
-  if(type==='project')setTimeout(function(){document.getElementById('modalInput').focus();},150);
+  setTimeout(function(){document.getElementById('modalInputProject').focus();},150);
 }
-function closeModal(type){document.getElementById('modal-'+type).classList.remove('open');if(type==='project')document.getElementById('modalInput').value='';}
+function closeModal(type){document.getElementById('modal-'+type).classList.remove('open');}
 function openHelp(){document.getElementById('modal-help').classList.add('open');}
 function closeHelp(){document.getElementById('modal-help').classList.remove('open');}
-
-function confirmModal(){
-  var name=document.getElementById('modalInput').value.trim();
+function confirmNewProject(){
+  var name=document.getElementById('modalInputProject').value.trim();
   if(!name)return;
   if(db.projects[name]){showToast('⚠️ 同じ名前のプロジェクトがあります');return;}
-  db.projects[name]={tasks:[]};
-  currentProject=name;
+  db.projects[name]={tasks:[]};currentProject=name;
   renderProjectSelect();renderDots();renderList();
   scheduleSave();closeModal('project');showToast('✅ "'+name+'" を作成しました');
+  document.getElementById('modalInputProject').value='';
 }
-
 function deleteTask(id){
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
   renderDots();renderList();scheduleSave();
@@ -327,7 +399,7 @@ function deleteTask(id){
 function addTask(name){
   if(!name.trim())return;
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
-  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:''});
+  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',createdAt:nowStr()});
   renderDots();renderList();scheduleSave();
 }
 function scheduleSave(){
@@ -339,7 +411,7 @@ function scheduleSave(){
   },800);
 }
 function setSyncStatus(s,l){document.getElementById('syncDot').className='sync-dot '+s;document.getElementById('syncLabel').textContent=l;}
-function showToast(msg){var c=document.getElementById('toastContainer');var t=document.createElement('div');t.className='toast';t.textContent=msg;c.appendChild(t);setTimeout(function(){t.remove();},3000);}
+function showToast(msg){var c=document.getElementById('toastContainer');var t=document.createElement('div');t.className='toast';t.textContent=msg;c.appendChild(t);setTimeout(function(){t.remove();},3500);}
 function hideLoading(){var el=document.getElementById('loadingOverlay');el.style.opacity='0';setTimeout(function(){el.style.display='none';},300);}
 
 document.getElementById('addBtn').onclick=function(){var inp=document.getElementById('taskInput');addTask(inp.value);inp.value='';inp.focus();};
