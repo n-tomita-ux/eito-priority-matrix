@@ -33,7 +33,7 @@ body{font-family:-apple-system,'Hiragino Sans','Yu Gothic',sans-serif;background
 .add-btn{padding:7px 16px;font-size:13px;border:1.5px solid #C8C4BE;border-radius:8px;background:#fff;color:#1A1A18;cursor:pointer;font-family:inherit;font-weight:500}
 .add-btn:hover{background:#EDECEA}
 .hint{font-size:12px;color:#6B6860}
-.main{padding:16px 20px;max-width:1000px;margin:0 auto}
+.main{padding:16px 20px;max-width:1100px;margin:0 auto}
 #canvasWrap{position:relative;border:1.5px solid #C8C4BE;border-radius:16px;background:#fff;overflow:hidden;user-select:none;margin-bottom:16px}
 canvas{display:block}
 .dot{position:absolute;width:28px;height:28px;border-radius:50%;border:2.5px solid;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.15)}
@@ -52,6 +52,15 @@ tr:hover td{background:#F9F8F6}
 .score-bar-bg{width:50px;height:6px;background:#E0DDD8;border-radius:3px;overflow:hidden;flex-shrink:0}
 .q-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;border:1px solid;white-space:nowrap}
 .assignee-select{font-size:12px;color:#272724;background:#F5F4F0;border:1px solid #C8C4BE;border-radius:6px;padding:3px 5px;cursor:pointer;outline:none;font-family:inherit;max-width:72px}
+.deadline-input{font-size:11px;color:#272724;background:#F5F4F0;border:1px solid #C8C4BE;border-radius:6px;padding:3px 5px;outline:none;font-family:inherit;max-width:110px;cursor:pointer}
+.deadline-input:focus{border-color:#888}
+.deadline-badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;white-space:nowrap}
+.dl-over{background:#FDEAE3;color:#7A2510;border:1px solid #E05C32}
+.dl-today{background:#FFE2D8;color:#7A2510;border:1px solid #E05C32}
+.dl-1{background:#FFF3E0;color:#7A3800;border:1px solid #F0A500}
+.dl-2{background:#FFF8E0;color:#5C4200;border:1px solid #D4B000}
+.dl-3{background:#FFFDE0;color:#4A4200;border:1px solid #C8C000}
+.dl-ok{background:#F5F4F0;color:#6B6860;border:1px solid #C8C4BE}
 .created-at{font-size:10px;color:#9A9893;white-space:nowrap}
 .done-btn{padding:3px 8px;font-size:11px;font-weight:600;border:1.5px solid #1E9E76;border-radius:6px;background:#BEEFD8;color:#095041;cursor:pointer;font-family:inherit;white-space:nowrap}
 .done-btn:hover{background:#9FE1CB}
@@ -123,6 +132,7 @@ tr:hover td{background:#F9F8F6}
         <th class="hide-sp" style="width:44px">重要</th>
         <th style="width:110px">スコア</th>
         <th style="width:76px">担当者</th>
+        <th style="width:120px">期限</th>
         <th class="hide-sp" style="width:90px">作成日</th>
         <th style="width:60px">完了</th>
         <th style="width:28px"></th>
@@ -134,7 +144,6 @@ tr:hover td{background:#F9F8F6}
 
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- プロジェクト新規 -->
 <div class="modal-overlay" id="modal-project" onclick="if(event.target===this)closeModal('project')">
   <div class="modal">
     <div class="modal-title">新規プロジェクト</div>
@@ -146,7 +155,6 @@ tr:hover td{background:#F9F8F6}
   </div>
 </div>
 
-<!-- プロジェクト名変更 -->
 <div class="modal-overlay" id="modal-rename" onclick="if(event.target===this)closeModal('rename')">
   <div class="modal">
     <div class="modal-title">プロジェクト名を変更</div>
@@ -158,21 +166,29 @@ tr:hover td{background:#F9F8F6}
   </div>
 </div>
 
-<!-- 使い方 -->
 <div class="modal-overlay" id="modal-help" onclick="if(event.target===this)closeHelp()">
   <div class="modal help-modal">
     <div class="modal-title">📊 使い方</div>
     <div class="help-body">
       <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。キャンバス中央に配置される。</div></div>
       <div class="step"><div class="step-num">2</div><div>キャンバスの番号付き点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
-      <div class="step"><div class="step-num">3</div><div>一覧で担当者を設定。タスク名は<b>ダブルクリック</b>で編集できる。</div></div>
-      <div class="step"><div class="step-num">4</div><div>タスクが完了したら「✅ 完了」ボタンを押す。作成日・完了日・経過日数がスプシに自動記録される。</div></div>
+      <div class="step"><div class="step-num">3</div><div>一覧で担当者・期限を設定。タスク名は<b>ダブルクリック</b>で編集できる。</div></div>
+      <div class="step"><div class="step-num">4</div><div>期限を設定すると残り日数に応じて緊急度が自動調整される（当日100・1日前90・2日前80・3〜5日前60）。</div></div>
+      <div class="step"><div class="step-num">5</div><div>タスクが完了したら「✅ 完了」ボタンを押す。作成日・完了日・経過日数がスプシに自動記録される。</div></div>
       <h3>4つの象限</h3>
       <ul>
         <li>🔥 <b>今すぐやる</b>…緊急かつ重要。すぐに自分で対応</li>
         <li>📅 <b>計画する</b>…重要だが急がない。日程を決めて対応</li>
         <li>🤝 <b>誰かに任せる</b>…緊急・重要でない。誰かに依頼</li>
         <li>⏸️ <b>後回し</b>…急ぎでも重要でもない。余裕があれば</li>
+      </ul>
+      <h3>期限による緊急度の自動調整</h3>
+      <ul>
+        <li>当日・期限切れ → 緊急度 100（🔴）</li>
+        <li>1日前 → 緊急度 90（🟠）</li>
+        <li>2日前 → 緊急度 80（🟡）</li>
+        <li>3〜5日前 → 緊急度 60（🟡）</li>
+        <li>6日以上・期限なし → そのまま</li>
       </ul>
       <h3>実績・経験値</h3>
       <p>ヘッダーの「📊 実績」からスプシの完了ログを確認できる。誰がいつ何日でタスクを完了したかが積み上がっていく。</p>
@@ -185,7 +201,6 @@ tr:hover td{background:#F9F8F6}
 
 <script>
 const GAS_URL='https://script.google.com/macros/s/AKfycbwBELPeB1UeZynd0Oi-NexSWjlsQlJ8qmQOoTOhj1tE85l6wXr7w3gFYPecs5thKhZwuA/exec';
-const SS_URL='https://docs.google.com/spreadsheets/d/1kJSLNs2PFeVdUzrmGENqGFhG2WljhJ1qvkTwGTL2Jko/edit';
 const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}}});
 const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','その他','未定'];
 const Q={
@@ -197,7 +212,49 @@ const Q={
 function getQ(u,i){return u>=50&&i>=50?Q.A:u<50&&i>=50?Q.B:u>=50&&i<50?Q.C:Q.D}
 function calcScore(u,i){return Math.round(u*0.45+i*0.55)}
 function nowStr(){return new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})}
-function dateStr(){return new Date().toLocaleDateString('ja-JP',{timeZone:'Asia/Tokyo'})}
+
+// 期限から残り日数を計算（当日=0、過去=負）
+function calcDaysLeft(deadline){
+  if(!deadline)return null;
+  var today=new Date();today.setHours(0,0,0,0);
+  var d=new Date(deadline);d.setHours(0,0,0,0);
+  return Math.floor((d-today)/(1000*60*60*24));
+}
+
+// 期限に応じた緊急度を返す（期限なしはnull）
+function deadlineUrgency(deadline){
+  var days=calcDaysLeft(deadline);
+  if(days===null)return null;
+  if(days<=0)return 100;
+  if(days===1)return 90;
+  if(days===2)return 80;
+  if(days<=5)return 60;
+  return null;
+}
+
+// 期限バッジのスタイルクラスと表示テキスト
+function deadlineBadge(deadline){
+  var days=calcDaysLeft(deadline);
+  if(days===null)return null;
+  var cls,label;
+  if(days<0){cls='dl-over';label='期限切れ';}
+  else if(days===0){cls='dl-today';label='今日';}
+  else if(days===1){cls='dl-1';label='明日';}
+  else if(days===2){cls='dl-2';label='あと2日';}
+  else if(days<=5){cls='dl-3';label='あと'+days+'日';}
+  else{cls='dl-ok';label='あと'+days+'日';}
+  return{cls:cls,label:label};
+}
+
+// 全タスクに期限による緊急度を適用
+function applyDeadlineUrgency(){
+  Object.values(db.projects).forEach(function(p){
+    (p.tasks||[]).forEach(function(t){
+      var u=deadlineUrgency(t.deadline);
+      if(u!==null)t.u=u;
+    });
+  });
+}
 
 const W=Math.min(window.innerWidth-48,900);
 const H=Math.round(W*0.56);
@@ -277,7 +334,6 @@ wrap.addEventListener('touchmove',function(e){
 window.addEventListener('mouseup',function(){if(dragging){dragging=null;scheduleSave();}});
 window.addEventListener('touchend',function(){if(dragging){dragging=null;scheduleSave();}});
 
-// タスク名インライン編集
 function startEditTaskName(id,td){
   var task=currentTasks().find(function(t){return t.id===id;});
   if(!task)return;
@@ -288,6 +344,16 @@ function startEditTaskName(id,td){
   inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderList();});
 }
 
+function setDeadline(id,val){
+  var task=currentTasks().find(function(t){return t.id===id;});
+  if(!task)return;
+  task.deadline=val;
+  // 即座に緊急度を反映
+  var u=deadlineUrgency(val);
+  if(u!==null)task.u=u;
+  renderDots();renderList();scheduleSave();
+}
+
 function renderList(){
   var tasks=currentTasks();
   var sorted=tasks.slice().sort(function(a,b){return calcScore(b.u,b.i)-calcScore(a.u,a.i);});
@@ -296,9 +362,12 @@ function renderList(){
     var dotSt='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+q.fill+';border:2px solid '+q.border+';color:'+q.text+';font-size:11px;font-weight:700';
     var barSt='width:'+score+'%;background:'+q.border+';height:100%;border-radius:3px';
     var numSt='color:'+q.text+';font-size:12px;font-weight:700;min-width:22px';
-    var badgeSt='background:'+q.fill+';border-color:'+q.border+';color:'+q.text;
     var memberOpts=MEMBERS.map(function(m){return'<option value="'+m+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';}).join('');
     var createdStr=t.createdAt?t.createdAt.slice(0,10):'-';
+    var badge=t.deadline?deadlineBadge(t.deadline):null;
+    var deadlineCell=
+      '<input type="date" class="deadline-input" value="'+(t.deadline||'')+'" onchange="setDeadline('+t.id+',this.value)">'+
+      (badge?'<br><span class="deadline-badge '+badge.cls+'">'+badge.label+'</span>':'');
     return '<tr>'+
       '<td><span style="'+dotSt+'">'+idx+'</span></td>'+
       '<td class="task-name-cell" data-id="'+t.id+'"><span class="task-name" title="ダブルクリックで編集" style="font-weight:'+(rank===0?'600':'400')+'">'+t.name+'</span></td>'+
@@ -306,6 +375,7 @@ function renderList(){
       '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.i+'</td>'+
       '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
       '<td><select class="assignee-select" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select></td>'+
+      '<td>'+deadlineCell+'</td>'+
       '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
       '<td><button class="done-btn" onclick="completeTask('+t.id+')">✅ 完了</button></td>'+
       '<td><button class="del-btn" onclick="deleteTask('+t.id+')">×</button></td>'+
@@ -316,7 +386,6 @@ function renderList(){
   });
 }
 
-// ✅ 完了処理
 function completeTask(id){
   var task=currentTasks().find(function(t){return t.id===id;});
   if(!task)return;
@@ -327,20 +396,8 @@ function completeTask(id){
     var diff=Math.floor((new Date()-created)/(1000*60*60*24));
     elapsedDays=diff;
   }
-  var log={
-    project:currentProject,
-    name:task.name,
-    assignee:task.assignee||'未定',
-    createdAt:task.createdAt||'-',
-    completedAt:now,
-    elapsedDays:elapsedDays,
-    u:task.u,
-    i:task.i,
-    score:calcScore(task.u,task.i)
-  };
-  // スプシに送信
+  var log={project:currentProject,name:task.name,assignee:task.assignee||'未定',createdAt:task.createdAt||'-',completedAt:now,elapsedDays:elapsedDays,u:task.u,i:task.i,score:calcScore(task.u,task.i)};
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',log:log})});
-  // タスクを削除して保存
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
   renderDots();renderList();scheduleSave();
   showToast('✅ 「'+task.name+'」を完了しました（'+elapsedDays+'日）');
@@ -399,7 +456,7 @@ function deleteTask(id){
 function addTask(name){
   if(!name.trim())return;
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
-  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',createdAt:nowStr()});
+  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',createdAt:nowStr()});
   renderDots();renderList();scheduleSave();
 }
 function scheduleSave(){
@@ -430,6 +487,7 @@ fetch(GAS_URL)
   .catch(function(){setSyncStatus('error','オフライン');showToast('⚠️ GAS接続失敗 - ローカルで動作中');})
   .finally(function(){
     currentProject=Object.keys(db.projects)[0];
+    applyDeadlineUrgency();
     renderProjectSelect();drawGrid();renderDots();renderList();setSyncStatus('ok','同期済み');hideLoading();
   });
 </script>
