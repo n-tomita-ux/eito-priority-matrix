@@ -38,6 +38,8 @@ body{font-family:-apple-system,'Hiragino Sans','Yu Gothic',sans-serif;background
 canvas{display:block}
 .dot{position:absolute;width:28px;height:28px;border-radius:50%;border:2.5px solid;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .dot:active{cursor:grabbing}
+.dot.review{border-style:dashed;animation:reviewPulse 1.5s infinite}
+@keyframes reviewPulse{0%,100%{box-shadow:0 0 0 0 rgba(240,165,0,.5)}50%{box-shadow:0 0 0 6px rgba(240,165,0,0)}}
 .dot-label{position:absolute;font-size:10px;white-space:nowrap;pointer-events:none;background:#fff;border:1px solid #C8C4BE;border-radius:4px;padding:2px 5px;color:#4A4844;transform:translateX(-50%);top:16px;left:50%;font-weight:500}
 .list-wrap{background:#fff;border-radius:16px;border:1.5px solid #C8C4BE;overflow:hidden}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -45,27 +47,36 @@ th{text-align:left;padding:8px 12px;color:#4A4844;font-weight:600;border-bottom:
 td{padding:7px 10px;border-bottom:1px solid #E0DDD8;color:#272724;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#F9F8F6}
+tr.review-row td{background:#FFFBF0}
 .task-name{cursor:pointer;border-radius:4px;padding:2px 4px;margin:-2px -4px;transition:background .15s}
 .task-name:hover{background:#EDECEA}
 .task-name-input{font-size:13px;font-family:inherit;color:#1A1A18;background:#fff;border:1.5px solid #7C73DE;border-radius:6px;padding:3px 7px;outline:none;width:100%;min-width:100px}
 .score-wrap{display:flex;align-items:center;gap:5px}
 .score-bar-bg{width:50px;height:6px;background:#E0DDD8;border-radius:3px;overflow:hidden;flex-shrink:0}
-.q-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;border:1px solid;white-space:nowrap}
 .assignee-select{font-size:12px;color:#272724;background:#F5F4F0;border:1px solid #C8C4BE;border-radius:6px;padding:3px 5px;cursor:pointer;outline:none;font-family:inherit;max-width:72px}
 .deadline-input{font-size:11px;color:#272724;background:#F5F4F0;border:1px solid #C8C4BE;border-radius:6px;padding:3px 5px;outline:none;font-family:inherit;max-width:110px;cursor:pointer}
 .deadline-input:focus{border-color:#888}
-.deadline-badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;white-space:nowrap}
+.deadline-badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;white-space:nowrap;margin-top:2px}
 .dl-over{background:#FDEAE3;color:#7A2510;border:1px solid #E05C32}
 .dl-today{background:#FFE2D8;color:#7A2510;border:1px solid #E05C32}
 .dl-1{background:#FFF3E0;color:#7A3800;border:1px solid #F0A500}
 .dl-2{background:#FFF8E0;color:#5C4200;border:1px solid #D4B000}
 .dl-3{background:#FFFDE0;color:#4A4200;border:1px solid #C8C000}
 .dl-ok{background:#F5F4F0;color:#6B6860;border:1px solid #C8C4BE}
+.review-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600;background:#FFF3E0;color:#7A3800;border:1px solid #F0A500;white-space:nowrap}
 .created-at{font-size:10px;color:#9A9893;white-space:nowrap}
-.done-btn{padding:3px 8px;font-size:11px;font-weight:600;border:1.5px solid #1E9E76;border-radius:6px;background:#BEEFD8;color:#095041;cursor:pointer;font-family:inherit;white-space:nowrap}
-.done-btn:hover{background:#9FE1CB}
+.btn-done{padding:3px 8px;font-size:11px;font-weight:600;border:1.5px solid #1E9E76;border-radius:6px;background:#BEEFD8;color:#095041;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-done:hover{background:#9FE1CB}
+.btn-review{padding:3px 8px;font-size:11px;font-weight:600;border:1.5px solid #F0A500;border-radius:6px;background:#FFF3E0;color:#7A3800;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-review:hover{background:#FFE0A0}
+.btn-sendback{padding:3px 8px;font-size:11px;font-weight:600;border:1.5px solid #9A9790;border-radius:6px;background:#E6E5E0;color:#4A4844;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-sendback:hover{background:#D0CFC8}
+.btn-memo{background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;opacity:.4;transition:opacity .15s}
+.btn-memo:hover{opacity:1}
+.btn-memo.has-memo{opacity:1;filter:drop-shadow(0 0 2px rgba(124,115,222,.6))}
 .del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;padding:0 3px;line-height:1}
 .del-btn:hover{color:#E05C32}
+.action-wrap{display:flex;flex-direction:column;gap:3px}
 .toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:#1A1A18;color:#fff;font-size:13px;padding:10px 22px;border-radius:24px;opacity:0;transform:translateY(10px);white-space:nowrap;animation:toastIn .25s forwards,toastOut .25s 2.5s forwards}
 @keyframes toastIn{to{opacity:1;transform:translateY(0)}}@keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
@@ -73,13 +84,19 @@ tr:hover td{background:#F9F8F6}
 .modal-overlay.open{opacity:1;visibility:visible}
 .modal{background:#fff;border-radius:16px;padding:28px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);transform:scale(.95);transition:transform .2s}
 .modal-overlay.open .modal{transform:scale(1)}
-.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;color:#1A1A18}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:8px;color:#1A1A18}
+.modal-sub{font-size:12px;color:#6B6860;margin-bottom:16px}
 .modal-input{width:100%;font-size:14px;color:#1A1A18;background:#EDECEA;border:1.5px solid #C8C4BE;border-radius:10px;padding:10px 14px;outline:none;font-family:inherit;margin-bottom:16px}
 .modal-input:focus{border-color:#888;background:#fff}
+.modal-select{width:100%;font-size:14px;color:#1A1A18;background:#EDECEA;border:1.5px solid #C8C4BE;border-radius:10px;padding:10px 14px;outline:none;font-family:inherit;margin-bottom:16px;cursor:pointer}
+.modal-textarea{width:100%;font-size:13px;color:#1A1A18;background:#EDECEA;border:1.5px solid #C8C4BE;border-radius:10px;padding:10px 14px;outline:none;font-family:inherit;margin-bottom:16px;resize:vertical;min-height:140px;line-height:1.6}
+.modal-textarea:focus{border-color:#888;background:#fff}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
 .btn{font-size:13px;font-weight:600;padding:8px 20px;border-radius:10px;border:none;cursor:pointer;font-family:inherit}
 .btn-primary{background:#1A1A18;color:#fff}
 .btn-secondary{background:#EDECEA;color:#4A4844;border:1.5px solid #C8C4BE}
+.btn-danger{background:#FDEAE3;color:#7A2510;border:1.5px solid #E05C32}
+.memo-modal{width:480px;max-width:92vw}
 .help-modal{width:440px;max-width:92vw}
 .help-body{font-size:13px;line-height:1.7;color:#272724}
 .help-body h3{font-size:13px;font-weight:700;margin:14px 0 4px;color:#1A1A18}
@@ -92,6 +109,7 @@ tr:hover td{background:#F9F8F6}
 .loading-spinner{width:36px;height:36px;border:3px solid #C8C4BE;border-top-color:#1A1A18;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:13px;color:#6B6860}
+.version-bar{text-align:center;font-size:10px;color:#C8C4BE;padding:12px;margin-top:8px}
 @media(max-width:650px){.main{padding:10px}th.hide-sp,td.hide-sp{display:none}}
 </style>
 </head>
@@ -118,7 +136,7 @@ tr:hover td{background:#F9F8F6}
 <div class="toolbar">
   <input class="task-input" id="taskInput" placeholder="タスク名を入力してEnter…" />
   <button class="add-btn" id="addBtn">追加</button>
-  <span class="hint">点をドラッグ / タスク名はダブルクリックで編集</span>
+  <span class="hint">点をドラッグ / タスク名はダブルクリックで編集 / 📝でメモ</span>
 </div>
 
 <div class="main">
@@ -134,16 +152,19 @@ tr:hover td{background:#F9F8F6}
         <th style="width:76px">担当者</th>
         <th style="width:120px">期限</th>
         <th class="hide-sp" style="width:90px">作成日</th>
-        <th style="width:60px">完了</th>
+        <th style="width:100px">アクション</th>
+        <th style="width:28px">📝</th>
         <th style="width:28px"></th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
+  <div class="version-bar">Rev2-20260408 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- プロジェクト新規 -->
 <div class="modal-overlay" id="modal-project" onclick="if(event.target===this)closeModal('project')">
   <div class="modal">
     <div class="modal-title">新規プロジェクト</div>
@@ -155,6 +176,7 @@ tr:hover td{background:#F9F8F6}
   </div>
 </div>
 
+<!-- プロジェクト名変更 -->
 <div class="modal-overlay" id="modal-rename" onclick="if(event.target===this)closeModal('rename')">
   <div class="modal">
     <div class="modal-title">プロジェクト名を変更</div>
@@ -166,22 +188,60 @@ tr:hover td{background:#F9F8F6}
   </div>
 </div>
 
+<!-- メモモーダル -->
+<div class="modal-overlay" id="modal-memo" onclick="if(event.target===this)closeMemo()">
+  <div class="modal memo-modal">
+    <div class="modal-title">📝 メモ</div>
+    <div class="modal-sub" id="memoModalSub"></div>
+    <textarea class="modal-textarea" id="memoTextarea" placeholder="詳細・備考・連絡事項などを自由に記入…"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="clearMemo()">クリア</button>
+      <button class="btn btn-secondary" onclick="closeMemo()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveMemo()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 確認依頼モーダル -->
+<div class="modal-overlay" id="modal-review" onclick="if(event.target===this)closeModal('review')">
+  <div class="modal">
+    <div class="modal-title">🔲 確認依頼</div>
+    <div class="modal-sub" id="reviewModalSub">確認してほしい人を選んでください</div>
+    <select class="modal-select" id="reviewerSelect">
+      <option value="">選択してください</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('review')">キャンセル</button>
+      <button class="btn btn-primary" onclick="confirmReview()">依頼する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 差し戻しモーダル -->
+<div class="modal-overlay" id="modal-sendback" onclick="if(event.target===this)closeModal('sendback')">
+  <div class="modal">
+    <div class="modal-title">↩️ 差し戻し</div>
+    <div class="modal-sub">修正担当者を選んでください（得点なし）</div>
+    <select class="modal-select" id="sendbackSelect">
+      <option value="">選択してください</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('sendback')">キャンセル</button>
+      <button class="btn btn-primary" onclick="confirmSendback()">差し戻す</button>
+    </div>
+  </div>
+</div>
+
+<!-- 使い方 -->
 <div class="modal-overlay" id="modal-help" onclick="if(event.target===this)closeHelp()">
   <div class="modal help-modal">
     <div class="modal-title">📊 使い方</div>
     <div class="help-body">
-      <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。キャンバス中央に配置される。</div></div>
-      <div class="step"><div class="step-num">2</div><div>キャンバスの番号付き点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
-      <div class="step"><div class="step-num">3</div><div>一覧で担当者・期限を設定。タスク名は<b>ダブルクリック</b>で編集できる。</div></div>
-      <div class="step"><div class="step-num">4</div><div>期限を設定すると残り日数に応じて緊急度が自動調整される（当日100・1日前90・2日前80・3〜5日前60）。</div></div>
-      <div class="step"><div class="step-num">5</div><div>タスクが完了したら「✅ 完了」ボタンを押す。期限に対する評価も含めてスプシに自動記録される。</div></div>
-      <h3>4つの象限</h3>
-      <ul>
-        <li>🔥 <b>今すぐやる</b>…緊急かつ重要。すぐに自分で対応</li>
-        <li>📅 <b>計画する</b>…重要だが急がない。日程を決めて対応</li>
-        <li>🤝 <b>誰かに任せる</b>…緊急・重要でない。誰かに依頼</li>
-        <li>⏸️ <b>後回し</b>…急ぎでも重要でもない。余裕があれば</li>
-      </ul>
+      <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。</div></div>
+      <div class="step"><div class="step-num">2</div><div>点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
+      <div class="step"><div class="step-num">3</div><div>担当者・期限を設定。タスク名はダブルクリックで編集。<b>📝ボタン</b>でメモ・詳細を記入できる。</div></div>
+      <div class="step"><div class="step-num">4</div><div>確認不要のタスクは「✅ 完了」で終了。確認が必要なタスクは「🔲 確認依頼」で確認者を選ぶ。</div></div>
+      <div class="step"><div class="step-num">5</div><div>確認者は「✅ 完了」で得点確定、「↩️ 差し戻し」で担当者変更・得点なし。</div></div>
       <h3>期限と評価</h3>
       <ul>
         <li>期限前に完了 → 通常（100%）</li>
@@ -189,8 +249,15 @@ tr:hover td{background:#F9F8F6}
         <li>期限切れで完了 → 🔴 赤（30%）</li>
         <li>期限なしで完了 → 通常（100%）</li>
       </ul>
-      <h3>実績・経験値</h3>
-      <p>ヘッダーの「📊 実績」からスプシの完了ログを確認できる。誰がいつ何日でタスクを完了したかが積み上がっていく。</p>
+      <h3>確認ボタンのフロー</h3>
+      <ul>
+        <li>🔲 確認依頼 → タスクが「確認待ち」状態になり点が黄色に変わる</li>
+        <li>✅ 完了（確認者） → 担当者の得点確定・スプシ記録</li>
+        <li>↩️ 差し戻し → 担当者変更・得点なし・タスク継続</li>
+        <li>確認者には得点がつかない</li>
+      </ul>
+      <h3>メモ</h3>
+      <p>📝ボタンを押すとメモ欄が開く。タスクの詳細・連絡事項・備考などを自由に記入できる。メモがあるタスクは📝が紫色に光る。</p>
     </div>
     <div class="modal-actions" style="margin-top:16px">
       <button class="btn btn-primary" onclick="closeHelp()">閉じる</button>
@@ -208,6 +275,8 @@ const Q={
   C:{label:'🤝 誰かに任せる',sub:'緊急・重要でない',   bg:'rgba(30,158,118,.12)', fill:'#BEEFD8',border:'#1E9E76',text:'#095041'},
   D:{label:'⏸️ 後回し',    sub:'急ぎでも重要でもない', bg:'rgba(150,150,150,.10)',fill:'#E6E5E0',border:'#9A9790',text:'#4A4844'},
 };
+const REVIEW_FILL='#FFF3E0';const REVIEW_BORDER='#F0A500';const REVIEW_TEXT='#7A3800';
+
 function getQ(u,i){return u>=50&&i>=50?Q.A:u<50&&i>=50?Q.B:u>=50&&i<50?Q.C:Q.D}
 function calcScore(u,i){return Math.round(u*0.45+i*0.55)}
 function nowStr(){return new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})}
@@ -218,7 +287,6 @@ function calcDaysLeft(deadline){
   var d=new Date(deadline);d.setHours(0,0,0,0);
   return Math.floor((d-today)/(1000*60*60*24));
 }
-
 function deadlineUrgency(deadline){
   var days=calcDaysLeft(deadline);
   if(days===null)return null;
@@ -228,7 +296,6 @@ function deadlineUrgency(deadline){
   if(days<=5)return 60;
   return null;
 }
-
 function deadlineBadge(deadline){
   var days=calcDaysLeft(deadline);
   if(days===null)return null;
@@ -241,19 +308,18 @@ function deadlineBadge(deadline){
   else{cls='dl-ok';label='あと'+days+'日';}
   return{cls:cls,label:label};
 }
-
-// 完了時の評価を判定
 function calcEvaluation(deadline){
   if(!deadline)return{label:'通常',rate:100};
   var days=calcDaysLeft(deadline);
+  if(days===null)return{label:'通常',rate:100};
   if(days===0)return{label:'期限当日完了',rate:50};
   if(days<0)return{label:'期限切れ完了',rate:30};
   return{label:'通常',rate:100};
 }
-
 function applyDeadlineUrgency(){
   Object.values(db.projects).forEach(function(p){
     (p.tasks||[]).forEach(function(t){
+      if(t.status==='review')return;
       var u=deadlineUrgency(t.deadline);
       if(u!==null)t.u=u;
     });
@@ -269,6 +335,7 @@ canvas.width=W;canvas.height=H;wrap.style.width=W+'px';
 const ctx=canvas.getContext('2d');
 
 let db=DEFAULT_DB(),currentProject='共通',dragging=null,idCounter=0,saveTimer=null;
+let reviewTargetId=null,sendbackTargetId=null,memoTargetId=null;
 
 function currentTasks(){return(db.projects[currentProject]&&db.projects[currentProject].tasks)||[]}
 
@@ -313,16 +380,28 @@ function pxToVal(px,py){var iX=PAD+LPAD,iY=PAD,iW=W-PAD-LPAD-PAD,iH=H-PAD*2;retu
 function renderDots(){
   document.querySelectorAll('.dot-wrap').forEach(function(e){e.remove();});
   currentTasks().forEach(function(t,idx){
-    var q=getQ(t.u,t.i);var pos=valToPx(t.u,t.i);
+    var isReview=(t.status==='review');
+    var fill=isReview?REVIEW_FILL:getQ(t.u,t.i).fill;
+    var border=isReview?REVIEW_BORDER:getQ(t.u,t.i).border;
+    var text=isReview?REVIEW_TEXT:getQ(t.u,t.i).text;
+    var pos=valToPx(t.u,t.i);
     var dw=document.createElement('div');dw.style.cssText='position:absolute;left:0;top:0;pointer-events:none;';dw.className='dot-wrap';
-    var dot=document.createElement('div');dot.className='dot';
-    dot.style.cssText='left:'+pos.px+'px;top:'+pos.py+'px;background:'+q.fill+';border-color:'+q.border+';color:'+q.text+';pointer-events:all';
+    var dot=document.createElement('div');dot.className='dot'+(isReview?' review':'');
+    dot.style.cssText='left:'+pos.px+'px;top:'+pos.py+'px;background:'+fill+';border-color:'+border+';color:'+text+';pointer-events:all';
     dot.textContent=idx+1;dot.dataset.id=t.id;
     var lbl=document.createElement('div');lbl.className='dot-label';
     lbl.textContent=t.name.length>14?t.name.slice(0,14)+'…':t.name;
     dot.appendChild(lbl);
-    dot.addEventListener('mousedown',function(e){e.preventDefault();var id=+e.currentTarget.dataset.id;dragging=currentTasks().find(function(x){return x.id===id;});});
-    dot.addEventListener('touchstart',function(e){e.preventDefault();var id=+e.currentTarget.dataset.id;dragging=currentTasks().find(function(x){return x.id===id;});},{passive:false});
+    dot.addEventListener('mousedown',function(e){
+      if(t.status==='review')return;
+      e.preventDefault();var id=+e.currentTarget.dataset.id;
+      dragging=currentTasks().find(function(x){return x.id===id;});
+    });
+    dot.addEventListener('touchstart',function(e){
+      if(t.status==='review')return;
+      e.preventDefault();var id=+e.currentTarget.dataset.id;
+      dragging=currentTasks().find(function(x){return x.id===id;});
+    },{passive:false});
     dw.appendChild(dot);wrap.appendChild(dw);
   });
 }
@@ -340,7 +419,7 @@ window.addEventListener('touchend',function(){if(dragging){dragging=null;schedul
 
 function startEditTaskName(id,td){
   var task=currentTasks().find(function(t){return t.id===id;});
-  if(!task)return;
+  if(!task||task.status==='review')return;
   var inp=document.createElement('input');inp.className='task-name-input';inp.value=task.name;
   td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
   function finish(){var val=inp.value.trim();if(val&&val!==task.name){task.name=val;scheduleSave();}renderList();renderDots();}
@@ -348,12 +427,41 @@ function startEditTaskName(id,td){
   inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderList();});
 }
 
+// メモ関連
+function openMemo(id){
+  memoTargetId=id;
+  var task=currentTasks().find(function(t){return t.id===id;});
+  if(!task)return;
+  document.getElementById('memoModalSub').textContent='「'+task.name+'」のメモ';
+  document.getElementById('memoTextarea').value=task.memo||'';
+  document.getElementById('modal-memo').classList.add('open');
+  setTimeout(function(){document.getElementById('memoTextarea').focus();},150);
+}
+function saveMemo(){
+  var task=currentTasks().find(function(t){return t.id===memoTargetId;});
+  if(!task)return;
+  task.memo=document.getElementById('memoTextarea').value;
+  closeMemo();renderList();scheduleSave();
+  showToast('📝 メモを保存しました');
+}
+function clearMemo(){
+  if(!confirm('メモをクリアしますか？'))return;
+  var task=currentTasks().find(function(t){return t.id===memoTargetId;});
+  if(!task)return;
+  task.memo='';
+  closeMemo();renderList();scheduleSave();
+  showToast('🗑️ メモをクリアしました');
+}
+function closeMemo(){document.getElementById('modal-memo').classList.remove('open');}
+
 function setDeadline(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});
   if(!task)return;
   task.deadline=val;
-  var u=deadlineUrgency(val);
-  if(u!==null)task.u=u;
+  if(task.status!=='review'){
+    var u=deadlineUrgency(val);
+    if(u!==null)task.u=u;
+  }
   renderDots();renderList();scheduleSave();
 }
 
@@ -361,32 +469,92 @@ function renderList(){
   var tasks=currentTasks();
   var sorted=tasks.slice().sort(function(a,b){return calcScore(b.u,b.i)-calcScore(a.u,a.i);});
   document.getElementById('tbody').innerHTML=sorted.map(function(t,rank){
+    var isReview=(t.status==='review');
     var q=getQ(t.u,t.i);var score=calcScore(t.u,t.i);var idx=tasks.indexOf(t)+1;
-    var dotSt='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+q.fill+';border:2px solid '+q.border+';color:'+q.text+';font-size:11px;font-weight:700';
-    var barSt='width:'+score+'%;background:'+q.border+';height:100%;border-radius:3px';
-    var numSt='color:'+q.text+';font-size:12px;font-weight:700;min-width:22px';
+    var dotFill=isReview?REVIEW_FILL:q.fill;
+    var dotBorder=isReview?REVIEW_BORDER:q.border;
+    var dotText=isReview?REVIEW_TEXT:q.text;
+    var dotSt='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+dotFill+';border:2px solid '+dotBorder+';color:'+dotText+';font-size:11px;font-weight:700';
+    var barSt='width:'+score+'%;background:'+(isReview?REVIEW_BORDER:q.border)+';height:100%;border-radius:3px';
+    var numSt='color:'+(isReview?REVIEW_TEXT:q.text)+';font-size:12px;font-weight:700;min-width:22px';
     var memberOpts=MEMBERS.map(function(m){return'<option value="'+m+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';}).join('');
     var createdStr=t.createdAt?t.createdAt.slice(0,10):'-';
     var badge=t.deadline?deadlineBadge(t.deadline):null;
-    var deadlineCell=
-      '<input type="date" class="deadline-input" value="'+(t.deadline||'')+'" onchange="setDeadline('+t.id+',this.value)">'+
+    var deadlineCell='<input type="date" class="deadline-input" value="'+(t.deadline||'')+'" onchange="setDeadline('+t.id+',this.value)">'+
       (badge?'<br><span class="deadline-badge '+badge.cls+'">'+badge.label+'</span>':'');
-    return '<tr>'+
+    var hasMemo=!!(t.memo&&t.memo.trim());
+    var memoBtn='<button class="btn-memo'+(hasMemo?' has-memo':'')+'" onclick="openMemo('+t.id+')" title="'+(hasMemo?'メモあり（クリックで編集）':'メモを追加')+'">📝</button>';
+    var actionCell='';
+    if(isReview){
+      actionCell='<div class="action-wrap">'+
+        '<span class="review-badge">🔲 '+t.reviewer+'が確認中</span>'+
+        '<div style="display:flex;gap:4px;margin-top:2px">'+
+        '<button class="btn-done" onclick="completeTask('+t.id+')">✅ 完了</button>'+
+        '<button class="btn-sendback" onclick="openSendback('+t.id+')">↩️ 差戻</button>'+
+        '</div></div>';
+    } else {
+      actionCell='<div class="action-wrap">'+
+        '<button class="btn-done" onclick="completeTask('+t.id+')">✅ 完了</button>'+
+        '<button class="btn-review" onclick="openReview('+t.id+')">🔲 確認依頼</button>'+
+        '</div>';
+    }
+    return '<tr'+(isReview?' class="review-row"':'')+'>'+
       '<td><span style="'+dotSt+'">'+idx+'</span></td>'+
-      '<td class="task-name-cell" data-id="'+t.id+'"><span class="task-name" title="ダブルクリックで編集" style="font-weight:'+(rank===0?'600':'400')+'">'+t.name+'</span></td>'+
+      '<td class="task-name-cell" data-id="'+t.id+'">'+
+        '<span class="task-name" title="ダブルクリックで編集" style="font-weight:'+(rank===0?'600':'400')+'">'+t.name+'</span>'+
+        (hasMemo?'<br><span style="font-size:10px;color:#9A9893;font-style:italic">'+t.memo.slice(0,20)+(t.memo.length>20?'…':'')+'</span>':'')+
+      '</td>'+
       '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.u+'</td>'+
       '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.i+'</td>'+
       '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
       '<td><select class="assignee-select" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select></td>'+
       '<td>'+deadlineCell+'</td>'+
       '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
-      '<td><button class="done-btn" onclick="completeTask('+t.id+')">✅ 完了</button></td>'+
+      '<td>'+actionCell+'</td>'+
+      '<td>'+memoBtn+'</td>'+
       '<td><button class="del-btn" onclick="deleteTask('+t.id+')">×</button></td>'+
     '</tr>';
   }).join('');
   document.querySelectorAll('.task-name-cell').forEach(function(td){
     td.addEventListener('dblclick',function(){startEditTaskName(+td.dataset.id,td);});
   });
+}
+
+function openReview(id){
+  reviewTargetId=id;
+  var task=currentTasks().find(function(t){return t.id===id;});
+  document.getElementById('reviewModalSub').textContent='「'+task.name+'」の確認者を選んでください';
+  var sel=document.getElementById('reviewerSelect');
+  sel.innerHTML='<option value="">選択してください</option>'+
+    MEMBERS.filter(function(m){return m!=='その他'&&m!=='未定';})
+    .map(function(m){return'<option value="'+m+'">'+m+'</option>';}).join('');
+  document.getElementById('modal-review').classList.add('open');
+}
+function confirmReview(){
+  var reviewer=document.getElementById('reviewerSelect').value;
+  if(!reviewer){showToast('⚠️ 確認者を選んでください');return;}
+  var task=currentTasks().find(function(t){return t.id===reviewTargetId;});
+  if(!task)return;
+  task.status='review';task.reviewer=reviewer;
+  closeModal('review');renderDots();renderList();scheduleSave();
+  showToast('🔲 「'+task.name+'」を'+reviewer+'に確認依頼しました');
+}
+function openSendback(id){
+  sendbackTargetId=id;
+  var sel=document.getElementById('sendbackSelect');
+  sel.innerHTML='<option value="">選択してください</option>'+
+    MEMBERS.filter(function(m){return m!=='その他'&&m!=='未定';})
+    .map(function(m){return'<option value="'+m+'">'+m+'</option>';}).join('');
+  document.getElementById('modal-sendback').classList.add('open');
+}
+function confirmSendback(){
+  var newAssignee=document.getElementById('sendbackSelect').value;
+  if(!newAssignee){showToast('⚠️ 担当者を選んでください');return;}
+  var task=currentTasks().find(function(t){return t.id===sendbackTargetId;});
+  if(!task)return;
+  task.status='normal';task.reviewer='';task.assignee=newAssignee;
+  closeModal('sendback');renderDots();renderList();scheduleSave();
+  showToast('↩️ 「'+task.name+'」を'+newAssignee+'に差し戻しました（得点なし）');
 }
 
 function completeTask(id){
@@ -401,18 +569,11 @@ function completeTask(id){
   }
   var evaluation=calcEvaluation(task.deadline);
   var log={
-    project:currentProject,
-    name:task.name,
-    assignee:task.assignee||'未定',
-    createdAt:task.createdAt||'-',
-    deadline:task.deadline||'-',
-    completedAt:now,
-    elapsedDays:elapsedDays,
-    evaluation:evaluation.label,
-    evaluationRate:evaluation.rate,
-    u:task.u,
-    i:task.i,
-    score:calcScore(task.u,task.i)
+    project:currentProject,name:task.name,assignee:task.assignee||'未定',
+    createdAt:task.createdAt||'-',deadline:task.deadline||'-',
+    completedAt:now,elapsedDays:elapsedDays,
+    evaluation:evaluation.label,evaluationRate:evaluation.rate,
+    u:task.u,i:task.i,score:calcScore(task.u,task.i)
   };
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',log:log})});
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
@@ -425,7 +586,6 @@ function setAssignee(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});
   if(task){task.assignee=val;scheduleSave();}
 }
-
 function renderProjectSelect(){
   var sel=document.getElementById('projectSelect');
   sel.innerHTML=Object.keys(db.projects).map(function(n){return'<option value="'+n+'">'+n+'</option>';}).join('');
@@ -474,7 +634,7 @@ function deleteTask(id){
 function addTask(name){
   if(!name.trim())return;
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
-  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',createdAt:nowStr()});
+  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',memo:'',createdAt:nowStr(),status:'normal',reviewer:''});
   renderDots();renderList();scheduleSave();
 }
 function scheduleSave(){
@@ -498,7 +658,12 @@ fetch(GAS_URL)
     if(json.ok&&json.data&&json.data.projects&&Object.keys(json.data.projects).length>0){
       db=json.data;
       Object.values(db.projects).forEach(function(p){
-        (p.tasks||[]).forEach(function(t){if(t.id>idCounter)idCounter=t.id;});
+        (p.tasks||[]).forEach(function(t){
+          if(t.id>idCounter)idCounter=t.id;
+          if(!t.status)t.status='normal';
+          if(!t.reviewer)t.reviewer='';
+          if(!t.memo)t.memo='';
+        });
       });
     }
   })
