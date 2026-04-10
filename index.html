@@ -160,7 +160,7 @@ tr.review-row td{background:#FFFBF0}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev6-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev7-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -209,7 +209,7 @@ tr.review-row td{background:#FFFBF0}
       <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。</div></div>
       <div class="step"><div class="step-num">2</div><div>点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
       <div class="step"><div class="step-num">3</div><div>担当者・期限を設定。タスク名はダブルクリックで編集。📝でメモを記入できる。</div></div>
-      <div class="step"><div class="step-num">4</div><div>担当者＋期限を設定すると📅が表示され、担当者のカレンダーに自動登録される。</div></div>
+      <div class="step"><div class="step-num">4</div><div>担当者＋期限を両方設定すると担当者のカレンダーに自動登録される。</div></div>
       <div class="step"><div class="step-num">5</div><div>確認不要は「✅ 完了」で終了。確認が必要なら「🔲 確認依頼」で確認者を選ぶ。</div></div>
       <div class="step"><div class="step-num">6</div><div>完了するとカレンダーからも自動削除される。</div></div>
       <h3>期限と評価</h3>
@@ -282,7 +282,6 @@ function applyDeadlineUrgency(){
   });
 }
 
-// カレンダー登録・更新（担当者＋期限が揃ったとき）
 function upsertCalendarEvent(task){
   if(!task.deadline||!task.assignee||task.assignee==='未定')return;
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
@@ -297,9 +296,6 @@ function upsertCalendarEvent(task){
     }})
   });
   showToast('📅 カレンダーに登録中...');
-}
-  })
-  .catch(function(){});
 }
 
 const W=Math.min(window.innerWidth-48,900),H=Math.round(W*0.56),PAD=50,LPAD=30;
@@ -431,7 +427,7 @@ function renderList(){
     var memberOpts=MEMBERS.map(function(m){return'<option value="'+m+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';}).join('');
     var createdStr=t.createdAt?t.createdAt.slice(0,10):'-';
     var badge=t.deadline?deadlineBadge(t.deadline):null;
-    var calBadge=t.calendarEventId?'<br><span class="cal-badge">📅 カレンダー登録済</span>':'';
+    var calBadge=(t.deadline&&t.assignee&&t.assignee!=='未定')?'<br><span class="cal-badge">📅 カレンダー登録済</span>':'';
     var dlCell='<input type="date" class="deadline-input" value="'+(t.deadline||'')+'" onchange="setDeadline('+t.id+',this.value)">'+
       (badge?'<br><span class="deadline-badge '+badge.cls+'">'+badge.label+'</span>':'')+calBadge;
     var hasMemo=!!(t.memo&&t.memo.trim());
@@ -527,7 +523,6 @@ function confirmSendback(){
       score:calcScore(task.u,task.i),sendbackCount:task.sendbackCount
     }})
   });
-  // 差し戻し時もカレンダー更新（担当者が変わるので）
   upsertCalendarEvent(task);
 }
 
@@ -594,11 +589,9 @@ function confirmNewProject(){
 }
 function deleteTask(id){
   var task=currentTasks().find(function(t){return t.id===id;});
-  // カレンダーイベントも削除
   if(task&&task.calendarEventId&&task.assignee){
     fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'deleteEvent',
-        calendarId:task.assignee,eventId:task.calendarEventId})
+      body:JSON.stringify({action:'deleteEvent',calendarId:task.assignee,eventId:task.calendarEventId})
     });
   }
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
