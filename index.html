@@ -285,7 +285,7 @@ function applyDeadlineUrgency(){
 // カレンダー登録・更新（担当者＋期限が揃ったとき）
 function upsertCalendarEvent(task){
   if(!task.deadline||!task.assignee||task.assignee==='未定')return;
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'upsertEvent',event:{
       taskId:task.id,
       taskName:task.name,
@@ -295,14 +295,9 @@ function upsertCalendarEvent(task){
       score:calcScore(task.u,task.i),
       eventId:task.calendarEventId||null
     }})
-  })
-  .then(function(r){return r.json();})
-  .then(function(json){
-    if(json.ok&&json.eventId){
-      task.calendarEventId=json.eventId;
-      scheduleSave();
-      showToast('📅 カレンダーに登録しました');
-    }
+  });
+  showToast('📅 カレンダーに登録中...');
+}
   })
   .catch(function(){});
 }
