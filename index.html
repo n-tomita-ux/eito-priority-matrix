@@ -63,6 +63,7 @@ tr.review-row td{background:#FFFBF0}
 .dl-2{background:#FFF8E0;color:#5C4200;border:1px solid #D4B000}
 .dl-3{background:#FFFDE0;color:#4A4200;border:1px solid #C8C000}
 .dl-ok{background:#F5F4F0;color:#6B6860;border:1px solid #C8C4BE}
+.cal-badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;white-space:nowrap;margin-top:2px;background:#E8F4FD;color:#1A5276;border:1px solid #AED6F1}
 .review-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600;background:#FFF3E0;color:#7A3800;border:1px solid #F0A500;white-space:nowrap}
 .created-at{font-size:10px;color:#9A9893;white-space:nowrap}
 .btn-done{padding:3px 8px;font-size:11px;font-weight:600;border:1.5px solid #1E9E76;border-radius:6px;background:#BEEFD8;color:#095041;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -150,7 +151,7 @@ tr.review-row td{background:#FFFBF0}
         <th class="hide-sp" style="width:44px">重要</th>
         <th style="width:110px">スコア</th>
         <th style="width:76px">担当者</th>
-        <th style="width:120px">期限</th>
+        <th style="width:140px">期限</th>
         <th class="hide-sp" style="width:90px">作成日</th>
         <th style="width:100px">アクション</th>
         <th style="width:28px">📝</th>
@@ -159,79 +160,58 @@ tr.review-row td{background:#FFFBF0}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev5-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev6-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
 
 <div class="modal-overlay" id="modal-project" onclick="if(event.target===this)closeModal('project')">
-  <div class="modal">
-    <div class="modal-title">新規プロジェクト</div>
+  <div class="modal"><div class="modal-title">新規プロジェクト</div>
     <input type="text" class="modal-input" id="modalInputProject" placeholder="プロジェクト名" onkeydown="if(event.key==='Enter')confirmNewProject()">
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('project')">キャンセル</button>
-      <button class="btn btn-primary" onclick="confirmNewProject()">作成</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('project')">キャンセル</button><button class="btn btn-primary" onclick="confirmNewProject()">作成</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-rename" onclick="if(event.target===this)closeModal('rename')">
-  <div class="modal">
-    <div class="modal-title">プロジェクト名を変更</div>
+  <div class="modal"><div class="modal-title">プロジェクト名を変更</div>
     <input type="text" class="modal-input" id="modalInputRename" placeholder="新しいプロジェクト名" onkeydown="if(event.key==='Enter')confirmRenameProject()">
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('rename')">キャンセル</button>
-      <button class="btn btn-primary" onclick="confirmRenameProject()">変更</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('rename')">キャンセル</button><button class="btn btn-primary" onclick="confirmRenameProject()">変更</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-memo" onclick="if(event.target===this)closeMemo()">
-  <div class="modal memo-modal">
-    <div class="modal-title">📝 メモ</div>
+  <div class="modal memo-modal"><div class="modal-title">📝 メモ</div>
     <div class="modal-sub" id="memoModalSub"></div>
     <textarea class="modal-textarea" id="memoTextarea" placeholder="詳細・備考・連絡事項などを自由に記入…"></textarea>
-    <div class="modal-actions">
-      <button class="btn btn-danger" onclick="clearMemo()">クリア</button>
-      <button class="btn btn-secondary" onclick="closeMemo()">キャンセル</button>
-      <button class="btn btn-primary" onclick="saveMemo()">保存</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-danger" onclick="clearMemo()">クリア</button><button class="btn btn-secondary" onclick="closeMemo()">キャンセル</button><button class="btn btn-primary" onclick="saveMemo()">保存</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-review" onclick="if(event.target===this)closeModal('review')">
-  <div class="modal">
-    <div class="modal-title">🔲 確認依頼</div>
+  <div class="modal"><div class="modal-title">🔲 確認依頼</div>
     <div class="modal-sub" id="reviewModalSub">確認してほしい人を選んでください</div>
     <select class="modal-select" id="reviewerSelect"><option value="">選択してください</option></select>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('review')">キャンセル</button>
-      <button class="btn btn-primary" onclick="confirmReview()">依頼する</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('review')">キャンセル</button><button class="btn btn-primary" onclick="confirmReview()">依頼する</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-sendback" onclick="if(event.target===this)closeModal('sendback')">
-  <div class="modal">
-    <div class="modal-title">↩️ 差し戻し</div>
+  <div class="modal"><div class="modal-title">↩️ 差し戻し</div>
     <div class="modal-sub">修正担当者を選んでください（得点なし）</div>
     <select class="modal-select" id="sendbackSelect"><option value="">選択してください</option></select>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('sendback')">キャンセル</button>
-      <button class="btn btn-primary" onclick="confirmSendback()">差し戻す</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('sendback')">キャンセル</button><button class="btn btn-primary" onclick="confirmSendback()">差し戻す</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-help" onclick="if(event.target===this)closeHelp()">
-  <div class="modal help-modal">
-    <div class="modal-title">📊 使い方</div>
+  <div class="modal help-modal"><div class="modal-title">📊 使い方</div>
     <div class="help-body">
       <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。</div></div>
       <div class="step"><div class="step-num">2</div><div>点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
       <div class="step"><div class="step-num">3</div><div>担当者・期限を設定。タスク名はダブルクリックで編集。📝でメモを記入できる。</div></div>
-      <div class="step"><div class="step-num">4</div><div>確認不要は「✅ 完了」で終了。確認が必要なら「🔲 確認依頼」で確認者を選ぶ。</div></div>
-      <div class="step"><div class="step-num">5</div><div>確認者は「✅ 完了」で得点確定、「↩️ 差し戻し」で担当者変更・得点なし。差し戻し回数はスプシに記録される。</div></div>
+      <div class="step"><div class="step-num">4</div><div>担当者＋期限を設定すると📅が表示され、担当者のカレンダーに自動登録される。</div></div>
+      <div class="step"><div class="step-num">5</div><div>確認不要は「✅ 完了」で終了。確認が必要なら「🔲 確認依頼」で確認者を選ぶ。</div></div>
+      <div class="step"><div class="step-num">6</div><div>完了するとカレンダーからも自動削除される。</div></div>
       <h3>期限と評価</h3>
       <ul>
         <li>期限前に完了 → 通常（100%）</li>
@@ -246,9 +226,7 @@ tr.review-row td{background:#FFFBF0}
         <li>完了 → スペース全体に実績通知</li>
       </ul>
     </div>
-    <div class="modal-actions" style="margin-top:16px">
-      <button class="btn btn-primary" onclick="closeHelp()">閉じる</button>
-    </div>
+    <div class="modal-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="closeHelp()">閉じる</button></div>
   </div>
 </div>
 
@@ -302,6 +280,31 @@ function applyDeadlineUrgency(){
       var u=deadlineUrgency(t.deadline);if(u!==null)t.u=u;
     });
   });
+}
+
+// カレンダー登録・更新（担当者＋期限が揃ったとき）
+function upsertCalendarEvent(task){
+  if(!task.deadline||!task.assignee||task.assignee==='未定')return;
+  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'upsertEvent',event:{
+      taskId:task.id,
+      taskName:task.name,
+      project:currentProject,
+      assignee:task.assignee,
+      deadline:task.deadline,
+      score:calcScore(task.u,task.i),
+      eventId:task.calendarEventId||null
+    }})
+  })
+  .then(function(r){return r.json();})
+  .then(function(json){
+    if(json.ok&&json.eventId){
+      task.calendarEventId=json.eventId;
+      scheduleSave();
+      showToast('📅 カレンダーに登録しました');
+    }
+  })
+  .catch(function(){});
 }
 
 const W=Math.min(window.innerWidth-48,900),H=Math.round(W*0.56),PAD=50,LPAD=30;
@@ -409,7 +412,15 @@ function setDeadline(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   task.deadline=val;
   if(task.status!=='review'){var u=deadlineUrgency(val);if(u!==null)task.u=u;}
+  upsertCalendarEvent(task);
   renderDots();renderList();scheduleSave();
+}
+
+function setAssignee(id,val){
+  var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
+  task.assignee=val;
+  upsertCalendarEvent(task);
+  scheduleSave();
 }
 
 function renderList(){
@@ -425,8 +436,9 @@ function renderList(){
     var memberOpts=MEMBERS.map(function(m){return'<option value="'+m+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';}).join('');
     var createdStr=t.createdAt?t.createdAt.slice(0,10):'-';
     var badge=t.deadline?deadlineBadge(t.deadline):null;
+    var calBadge=t.calendarEventId?'<br><span class="cal-badge">📅 カレンダー登録済</span>':'';
     var dlCell='<input type="date" class="deadline-input" value="'+(t.deadline||'')+'" onchange="setDeadline('+t.id+',this.value)">'+
-      (badge?'<br><span class="deadline-badge '+badge.cls+'">'+badge.label+'</span>':'');
+      (badge?'<br><span class="deadline-badge '+badge.cls+'">'+badge.label+'</span>':'')+calBadge;
     var hasMemo=!!(t.memo&&t.memo.trim());
     var memoBtn='<button class="btn-memo'+(hasMemo?' has-memo':'')+'" onclick="openMemo('+t.id+')" title="'+(hasMemo?'メモあり':'メモを追加')+'">📝</button>';
     var sbCount=t.sendbackCount||0;
@@ -488,19 +500,15 @@ function confirmReview(){
   showToast('🔲 「'+task.name+'」を'+reviewer+'に確認依頼しました');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'review',review:{
-      taskName:task.name,
-      project:currentProject,
-      requester:task.assignee||'未定',
-      reviewer:reviewer,
-      deadline:task.deadline||'',
-      score:calcScore(task.u,task.i)
+      taskName:task.name,project:currentProject,
+      requester:task.assignee||'未定',reviewer:reviewer,
+      deadline:task.deadline||'',score:calcScore(task.u,task.i)
     }})
   });
 }
 
 function openSendback(id){
   sendbackTargetId=id;
-  var task=currentTasks().find(function(t){return t.id===id;});
   var sel=document.getElementById('sendbackSelect');
   sel.innerHTML='<option value="">選択してください</option>'+
     MEMBERS.filter(function(m){return m!=='未定';})
@@ -519,14 +527,13 @@ function confirmSendback(){
   showToast('↩️ 「'+task.name+'」を'+newAssignee+'に差し戻しました（'+task.sendbackCount+'回目）');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'sendback',sendback:{
-      taskName:task.name,
-      project:currentProject,
-      fromAssignee:fromAssignee,
-      newAssignee:newAssignee,
-      score:calcScore(task.u,task.i),
-      sendbackCount:task.sendbackCount
+      taskName:task.name,project:currentProject,
+      fromAssignee:fromAssignee,newAssignee:newAssignee,
+      score:calcScore(task.u,task.i),sendbackCount:task.sendbackCount
     }})
   });
+  // 差し戻し時もカレンダー更新（担当者が変わるので）
+  upsertCalendarEvent(task);
 }
 
 function completeTask(id){
@@ -545,7 +552,8 @@ function completeTask(id){
     completedAt:now,elapsedDays:elapsedDays,
     evaluation:evaluation.label,evaluationRate:evaluation.rate,
     u:task.u,i:task.i,score:calcScore(task.u,task.i),
-    sendbackCount:task.sendbackCount||0
+    sendbackCount:task.sendbackCount||0,
+    calendarEventId:task.calendarEventId||null
   };
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',log:log})});
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
@@ -554,7 +562,6 @@ function completeTask(id){
   showToast('✅ 「'+task.name+'」を完了しました（'+elapsedDays+'日）'+evalMsg);
 }
 
-function setAssignee(id,val){var task=currentTasks().find(function(t){return t.id===id;});if(task){task.assignee=val;scheduleSave();}}
 function renderProjectSelect(){
   var sel=document.getElementById('projectSelect');
   sel.innerHTML=Object.keys(db.projects).map(function(n){return'<option value="'+n+'">'+n+'</option>';}).join('');
@@ -591,13 +598,21 @@ function confirmNewProject(){
   document.getElementById('modalInputProject').value='';
 }
 function deleteTask(id){
+  var task=currentTasks().find(function(t){return t.id===id;});
+  // カレンダーイベントも削除
+  if(task&&task.calendarEventId&&task.assignee){
+    fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'deleteEvent',
+        calendarId:task.assignee,eventId:task.calendarEventId})
+    });
+  }
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
   renderDots();renderList();scheduleSave();
 }
 function addTask(name){
   if(!name.trim())return;
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
-  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',memo:'',createdAt:nowStr(),status:'normal',reviewer:'',sendbackCount:0});
+  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',memo:'',createdAt:nowStr(),status:'normal',reviewer:'',sendbackCount:0,calendarEventId:null});
   renderDots();renderList();scheduleSave();
 }
 function scheduleSave(){
@@ -626,6 +641,7 @@ fetch(GAS_URL)
           if(!t.reviewer)t.reviewer='';
           if(!t.memo)t.memo='';
           if(!t.sendbackCount)t.sendbackCount=0;
+          if(!t.calendarEventId)t.calendarEventId=null;
         });
       });
     }
