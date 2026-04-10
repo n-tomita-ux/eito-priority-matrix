@@ -159,7 +159,7 @@ tr.review-row td{background:#FFFBF0}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev4-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev5-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -239,12 +239,11 @@ tr.review-row td{background:#FFFBF0}
         <li>期限切れで完了 → 🔴 赤（30%）</li>
         <li>期限なしで完了 → 通常（100%）</li>
       </ul>
-      <h3>実績・経験値</h3>
-      <p>ヘッダーの「📊 実績」からスプシの完了ログを確認できる。</p>
-      <h3>Google Chat通知</h3>
+      <h3>Chat通知</h3>
       <ul>
-        <li>確認依頼時 → Chatに通知が届く</li>
-        <li>完了時 → Chatに完了報告が届く</li>
+        <li>確認依頼 → 確認者にメンション通知</li>
+        <li>差し戻し → 新担当者にメンション通知</li>
+        <li>完了 → スペース全体に実績通知</li>
       </ul>
     </div>
     <div class="modal-actions" style="margin-top:16px">
@@ -501,20 +500,33 @@ function confirmReview(){
 
 function openSendback(id){
   sendbackTargetId=id;
+  var task=currentTasks().find(function(t){return t.id===id;});
   var sel=document.getElementById('sendbackSelect');
   sel.innerHTML='<option value="">選択してください</option>'+
     MEMBERS.filter(function(m){return m!=='未定';})
     .map(function(m){return'<option value="'+m+'">'+m+'</option>';}).join('');
   document.getElementById('modal-sendback').classList.add('open');
 }
+
 function confirmSendback(){
   var newAssignee=document.getElementById('sendbackSelect').value;
   if(!newAssignee){showToast('⚠️ 担当者を選んでください');return;}
   var task=currentTasks().find(function(t){return t.id===sendbackTargetId;});if(!task)return;
+  var fromAssignee=task.reviewer||task.assignee||'未定';
   task.status='normal';task.reviewer='';task.assignee=newAssignee;
   task.sendbackCount=(task.sendbackCount||0)+1;
   closeModal('sendback');renderDots();renderList();scheduleSave();
   showToast('↩️ 「'+task.name+'」を'+newAssignee+'に差し戻しました（'+task.sendbackCount+'回目）');
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'sendback',sendback:{
+      taskName:task.name,
+      project:currentProject,
+      fromAssignee:fromAssignee,
+      newAssignee:newAssignee,
+      score:calcScore(task.u,task.i),
+      sendbackCount:task.sendbackCount
+    }})
+  });
 }
 
 function completeTask(id){
