@@ -160,7 +160,7 @@ tr.review-row td{background:#FFFBF0}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev7-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev8-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -209,7 +209,7 @@ tr.review-row td{background:#FFFBF0}
       <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。</div></div>
       <div class="step"><div class="step-num">2</div><div>点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
       <div class="step"><div class="step-num">3</div><div>担当者・期限を設定。タスク名はダブルクリックで編集。📝でメモを記入できる。</div></div>
-      <div class="step"><div class="step-num">4</div><div>担当者＋期限を両方設定すると担当者のカレンダーに自動登録される。</div></div>
+      <div class="step"><div class="step-num">4</div><div>担当者＋期限を両方設定すると担当者のカレンダーに自動登録される。社外メンバーにはメールでも通知される。</div></div>
       <div class="step"><div class="step-num">5</div><div>確認不要は「✅ 完了」で終了。確認が必要なら「🔲 確認依頼」で確認者を選ぶ。</div></div>
       <div class="step"><div class="step-num">6</div><div>完了するとカレンダーからも自動削除される。</div></div>
       <h3>期限と評価</h3>
@@ -225,6 +225,11 @@ tr.review-row td{background:#FFFBF0}
         <li>差し戻し → 新担当者にメンション通知</li>
         <li>完了 → スペース全体に実績通知</li>
       </ul>
+      <h3>メール通知（社外メンバーのみ）</h3>
+      <ul>
+        <li>担当者＋期限セット時 → アサイン通知メールを送信</li>
+        <li>期限変更時 → 【更新】付きで再送</li>
+      </ul>
     </div>
     <div class="modal-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="closeHelp()">閉じる</button></div>
   </div>
@@ -233,7 +238,7 @@ tr.review-row td{background:#FFFBF0}
 <script>
 const GAS_URL='https://script.google.com/macros/s/AKfycbwBELPeB1UeZynd0Oi-NexSWjlsQlJ8qmQOoTOhj1tE85l6wXr7w3gFYPecs5thKhZwuA/exec';
 const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}}});
-const MEMBERS=['冨田','加藤','佐藤','瀬川','派遣①','派遣②','未定'];
+const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','派遣②','未定'];
 const Q={
   A:{label:'🔥 今すぐやる',sub:'緊急 × 重要',       bg:'rgba(224,92,50,.13)', fill:'#FFE2D8',border:'#E05C32',text:'#7A2510'},
   B:{label:'📅 計画する',  sub:'重要・余裕あり',     bg:'rgba(124,115,222,.12)',fill:'#E5E1FD',border:'#7C73DE',text:'#3B2E9A'},
