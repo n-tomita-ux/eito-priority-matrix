@@ -159,7 +159,7 @@ tr.review-row td{background:#FFFBF0}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev3-20260408 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev4-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -241,6 +241,11 @@ tr.review-row td{background:#FFFBF0}
       </ul>
       <h3>実績・経験値</h3>
       <p>ヘッダーの「📊 実績」からスプシの完了ログを確認できる。</p>
+      <h3>Google Chat通知</h3>
+      <ul>
+        <li>確認依頼時 → Chatに通知が届く</li>
+        <li>完了時 → Chatに完了報告が届く</li>
+      </ul>
     </div>
     <div class="modal-actions" style="margin-top:16px">
       <button class="btn btn-primary" onclick="closeHelp()">閉じる</button>
@@ -251,7 +256,7 @@ tr.review-row td{background:#FFFBF0}
 <script>
 const GAS_URL='https://script.google.com/macros/s/AKfycbwBELPeB1UeZynd0Oi-NexSWjlsQlJ8qmQOoTOhj1tE85l6wXr7w3gFYPecs5thKhZwuA/exec';
 const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}}});
-const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','その他','未定'];
+const MEMBERS=['冨田','加藤','佐藤','瀬川','派遣①','派遣②','未定'];
 const Q={
   A:{label:'🔥 今すぐやる',sub:'緊急 × 重要',       bg:'rgba(224,92,50,.13)', fill:'#FFE2D8',border:'#E05C32',text:'#7A2510'},
   B:{label:'📅 計画する',  sub:'重要・余裕あり',     bg:'rgba(124,115,222,.12)',fill:'#E5E1FD',border:'#7C73DE',text:'#3B2E9A'},
@@ -425,7 +430,6 @@ function renderList(){
       (badge?'<br><span class="deadline-badge '+badge.cls+'">'+badge.label+'</span>':'');
     var hasMemo=!!(t.memo&&t.memo.trim());
     var memoBtn='<button class="btn-memo'+(hasMemo?' has-memo':'')+'" onclick="openMemo('+t.id+')" title="'+(hasMemo?'メモあり':'メモを追加')+'">📝</button>';
-    // 差し戻し回数バッジ
     var sbCount=t.sendbackCount||0;
     var sbBadge=sbCount>0?'<br><span style="font-size:10px;color:#9A9790">↩️ '+sbCount+'回</span>':'';
     var actionCell='';
@@ -471,10 +475,11 @@ function openReview(id){
   document.getElementById('reviewModalSub').textContent='「'+task.name+'」の確認者を選んでください';
   var sel=document.getElementById('reviewerSelect');
   sel.innerHTML='<option value="">選択してください</option>'+
-    MEMBERS.filter(function(m){return m!=='その他'&&m!=='未定';})
+    MEMBERS.filter(function(m){return m!=='未定';})
     .map(function(m){return'<option value="'+m+'">'+m+'</option>';}).join('');
   document.getElementById('modal-review').classList.add('open');
 }
+
 function confirmReview(){
   var reviewer=document.getElementById('reviewerSelect').value;
   if(!reviewer){showToast('⚠️ 確認者を選んでください');return;}
@@ -482,12 +487,23 @@ function confirmReview(){
   task.status='review';task.reviewer=reviewer;
   closeModal('review');renderDots();renderList();scheduleSave();
   showToast('🔲 「'+task.name+'」を'+reviewer+'に確認依頼しました');
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'review',review:{
+      taskName:task.name,
+      project:currentProject,
+      requester:task.assignee||'未定',
+      reviewer:reviewer,
+      deadline:task.deadline||'',
+      score:calcScore(task.u,task.i)
+    }})
+  });
 }
+
 function openSendback(id){
   sendbackTargetId=id;
   var sel=document.getElementById('sendbackSelect');
   sel.innerHTML='<option value="">選択してください</option>'+
-    MEMBERS.filter(function(m){return m!=='その他'&&m!=='未定';})
+    MEMBERS.filter(function(m){return m!=='未定';})
     .map(function(m){return'<option value="'+m+'">'+m+'</option>';}).join('');
   document.getElementById('modal-sendback').classList.add('open');
 }
@@ -495,10 +511,8 @@ function confirmSendback(){
   var newAssignee=document.getElementById('sendbackSelect').value;
   if(!newAssignee){showToast('⚠️ 担当者を選んでください');return;}
   var task=currentTasks().find(function(t){return t.id===sendbackTargetId;});if(!task)return;
-  task.status='normal';
-  task.reviewer='';
-  task.assignee=newAssignee;
-  task.sendbackCount=(task.sendbackCount||0)+1; // ★差し戻し回数カウントアップ
+  task.status='normal';task.reviewer='';task.assignee=newAssignee;
+  task.sendbackCount=(task.sendbackCount||0)+1;
   closeModal('sendback');renderDots();renderList();scheduleSave();
   showToast('↩️ 「'+task.name+'」を'+newAssignee+'に差し戻しました（'+task.sendbackCount+'回目）');
 }
@@ -519,7 +533,7 @@ function completeTask(id){
     completedAt:now,elapsedDays:elapsedDays,
     evaluation:evaluation.label,evaluationRate:evaluation.rate,
     u:task.u,i:task.i,score:calcScore(task.u,task.i),
-    sendbackCount:task.sendbackCount||0  // ★差し戻し回数を送信
+    sendbackCount:task.sendbackCount||0
   };
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',log:log})});
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
@@ -599,7 +613,7 @@ fetch(GAS_URL)
           if(!t.status)t.status='normal';
           if(!t.reviewer)t.reviewer='';
           if(!t.memo)t.memo='';
-          if(!t.sendbackCount)t.sendbackCount=0; // ★既存タスクに差し戻し回数を初期化
+          if(!t.sendbackCount)t.sendbackCount=0;
         });
       });
     }
