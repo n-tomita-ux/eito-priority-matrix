@@ -410,28 +410,38 @@ function updateSortIcons(){
 }
 
 // ── 担当者フィルター（ヘッダードロップダウン）──
+var assigneeFilterOpen=false;
 function toggleAssigneeFilter(e){
   e.stopPropagation();
   var dd=document.getElementById('assigneeDropdown');
-  if(dd.style.display==='none'){
-    var items=[{label:'（全員）',val:''}].concat(MEMBERS.map(function(m){return{label:m,val:m};}));
-    dd.innerHTML=items.map(function(item){
-      var mc=MEMBER_COLORS[item.val];
-      var color=mc&&mc.border?mc.border:'inherit';
-      var isActive=currentFilter===item.val;
-      return'<div class="assignee-dropdown-item'+(isActive?' active':'')+'" style="color:'+color+'" onclick="selectAssigneeFilter(\''+item.val+'\',event)">'+
-        (isActive?'✓ ':'')+item.label+'</div>';
-    }).join('');
-    dd.style.display='block';
-    setTimeout(function(){document.addEventListener('click',closeAssigneeFilter,{once:true});},10);
-  }else{
+  if(assigneeFilterOpen){
     dd.style.display='none';
+    assigneeFilterOpen=false;
+    return;
   }
+  var items=[{label:'（全員）',val:''}].concat(MEMBERS.map(function(m){return{label:m,val:m};}));
+  dd.innerHTML=items.map(function(item){
+    var mc=MEMBER_COLORS[item.val];
+    var color=mc&&mc.border?mc.border:'inherit';
+    var isActive=currentFilter===item.val;
+    return'<div class="assignee-dropdown-item'+(isActive?' active':'')+'" style="color:'+color+'" onclick="selectAssigneeFilter(\''+item.val+'\',event)">'+
+      (isActive?'✓ ':'')+item.label+'</div>';
+  }).join('');
+  dd.style.display='block';
+  assigneeFilterOpen=true;
+  setTimeout(function(){
+    document.addEventListener('click',function handler(){
+      dd.style.display='none';
+      assigneeFilterOpen=false;
+      document.removeEventListener('click',handler);
+    });
+  },10);
 }
 function selectAssigneeFilter(val,e){
   if(e)e.stopPropagation();
   currentFilter=val;
   document.getElementById('assigneeDropdown').style.display='none';
+  assigneeFilterOpen=false;
   var icon=document.getElementById('assignee-filter-icon');
   if(currentFilter){
     var mc=MEMBER_COLORS[currentFilter];
@@ -445,6 +455,7 @@ function selectAssigneeFilter(val,e){
 }
 function closeAssigneeFilter(){
   var dd=document.getElementById('assigneeDropdown');if(dd)dd.style.display='none';
+  assigneeFilterOpen=false;
 }
 function updateFilterOptions(){/* ヘッダー方式のため不要 */}
 function filteredTasks(){
