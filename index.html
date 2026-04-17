@@ -186,7 +186,6 @@ tr.selected-row td{background:#EEF0FD !important}
         <th class="hide-sp" style="width:44px" onclick="cycleSort('importance')" id="th-importance">重要<span class="sort-icon">↕</span></th>
         <th style="width:110px" onclick="cycleSort('score')" id="th-score">スコア<span class="sort-icon">↕</span></th>
         <th style="width:76px;position:relative" id="th-assignee" onclick="toggleAssigneeFilter(event)">担当者<span class="sort-icon" id="assignee-filter-icon">▼</span>
-          <div id="assigneeDropdown" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1.5px solid #C8C4BE;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:500;min-width:110px;padding:4px 0"></div>
         </th>
         <th style="width:140px" onclick="cycleSort('deadline')" id="th-deadline">期限<span class="sort-icon">↕</span></th>
         <th class="hide-sp" style="width:90px" onclick="cycleSort('created')" id="th-created">作成日<span class="sort-icon">↕</span></th>
@@ -409,42 +408,58 @@ function updateSortIcons(){
   }
 }
 
-// ── 担当者フィルター（ヘッダードロップダウン）──
+// ── 担当者フィルター（body直下fixed方式）──
 var assigneeFilterOpen=false;
+
 function toggleAssigneeFilter(e){
   e.stopPropagation();
-  var dd=document.getElementById('assigneeDropdown');
-  // フラグではなくDOM状態で判定
-  var isOpen=dd&&dd.style.display==='block';
-  if(isOpen){
-    dd.style.display='none';
-    assigneeFilterOpen=false;
+  if(assigneeFilterOpen){
+    closeAssigneeFilter();
     return;
   }
+  // 既存ドロップダウン削除
+  var old=document.getElementById('assigneeDropdown');
+  if(old)old.remove();
+
+  // ドロップダウン生成
+  var dd=document.createElement('div');
+  dd.id='assigneeDropdown';
+  dd.className='overlap-popup'; // 同じスタイル流用
+  dd.style.cssText='position:fixed;z-index:9999;min-width:120px;padding:4px 0;display:block';
+
   var items=[{label:'（全員）',val:''}].concat(MEMBERS.map(function(m){return{label:m,val:m};}));
-  dd.innerHTML=items.map(function(item){
-    var mc=MEMBER_COLORS[item.val];
-    var color=mc&&mc.border?mc.border:'inherit';
-    var isActive=currentFilter===item.val;
-    return'<div class="assignee-dropdown-item'+(isActive?' active':'')+'" style="color:'+color+'" onclick="selectAssigneeFilter(\''+item.val+'\',event)">'+
-      (isActive?'✓ ':'')+item.label+'</div>';
-  }).join('');
-  dd.style.display='block';
+  dd.innerHTML='<div class="overlap-popup-title">担当者で絞り込み</div>'+
+    items.map(function(item){
+      var mc=MEMBER_COLORS[item.val];
+      var color=mc&&mc.border?mc.border:'inherit';
+      var isActive=currentFilter===item.val;
+      return'<div class="assignee-dropdown-item'+(isActive?' active':'')+
+        '" style="color:'+color+'" onclick="selectAssigneeFilter(\''+item.val+'\',event)">'+
+        (isActive?'✓ ':'')+item.label+'</div>';
+    }).join('');
+
+  document.body.appendChild(dd);
+
+  // 位置をthに合わせる
+  var th=document.getElementById('th-assignee');
+  var rect=th.getBoundingClientRect();
+  var left=rect.left;
+  var top=rect.bottom+2;
+  // 右端はみ出し補正
+  if(left+dd.offsetWidth>window.innerWidth-8)left=window.innerWidth-dd.offsetWidth-8;
+  dd.style.left=left+'px';
+  dd.style.top=top+'px';
+
   assigneeFilterOpen=true;
   setTimeout(function(){
-    document.addEventListener('click',function handler(){
-      var dd2=document.getElementById('assigneeDropdown');
-      if(dd2)dd2.style.display='none';
-      assigneeFilterOpen=false;
-      document.removeEventListener('click',handler);
-    });
+    document.addEventListener('click',closeAssigneeFilter);
   },10);
 }
+
 function selectAssigneeFilter(val,e){
   if(e)e.stopPropagation();
   currentFilter=val;
-  document.getElementById('assigneeDropdown').style.display='none';
-  assigneeFilterOpen=false;
+  closeAssigneeFilter();
   var icon=document.getElementById('assignee-filter-icon');
   if(currentFilter){
     var mc=MEMBER_COLORS[currentFilter];
@@ -456,9 +471,12 @@ function selectAssigneeFilter(val,e){
   }
   renderDots();renderList();
 }
+
 function closeAssigneeFilter(){
-  var dd=document.getElementById('assigneeDropdown');if(dd)dd.style.display='none';
+  var dd=document.getElementById('assigneeDropdown');
+  if(dd)dd.remove();
   assigneeFilterOpen=false;
+  document.removeEventListener('click',closeAssigneeFilter);
 }
 function updateFilterOptions(){/* ヘッダー方式のため不要 */}
 function filteredTasks(){
@@ -734,7 +752,6 @@ function setAssignee(id,val){
 }
 
 function renderList(){
-  assigneeFilterOpen=false;
   var tasks=filteredTasks();
   var sorted=sortedTasks(tasks);
   var allTasks=currentTasks();
