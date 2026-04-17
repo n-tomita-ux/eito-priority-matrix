@@ -27,27 +27,37 @@ body{font-family:-apple-system,'Hiragino Sans','Yu Gothic',sans-serif;background
 .btn-sm{font-size:12px;color:#6B6860;background:none;border:1.5px solid #C8C4BE;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:inherit}
 .btn-sm:hover{border-color:#888;color:#1A1A18}
 .btn-sm.dashed{border-style:dashed}
+.btn-sm.danger{color:#E05C32;border-color:#E05C32}
+.btn-sm.danger:hover{background:#FDEAE3}
 .toolbar{background:#fff;border-bottom:1.5px solid #C8C4BE;padding:10px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .task-input{flex:1;min-width:160px;padding:7px 12px;font-size:13px;border:1.5px solid #C8C4BE;border-radius:8px;background:#EDECEA;color:#1A1A18;outline:none;font-family:inherit}
 .task-input:focus{border-color:#888;background:#fff}
 .add-btn{padding:7px 16px;font-size:13px;border:1.5px solid #C8C4BE;border-radius:8px;background:#fff;color:#1A1A18;cursor:pointer;font-family:inherit;font-weight:500}
 .add-btn:hover{background:#EDECEA}
+.filter-select{font-size:12px;color:#272724;background:#F5F4F0;border:1.5px solid #C8C4BE;border-radius:8px;padding:5px 10px;cursor:pointer;outline:none;font-family:inherit}
+.filter-select:focus{border-color:#888}
 .hint{font-size:12px;color:#6B6860}
 .main{padding:16px 20px;max-width:1100px;margin:0 auto}
 #canvasWrap{position:relative;border:1.5px solid #C8C4BE;border-radius:16px;background:#fff;overflow:hidden;user-select:none;margin-bottom:16px}
 canvas{display:block}
-.dot{position:absolute;width:28px;height:28px;border-radius:50%;border:2.5px solid;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.dot{position:absolute;width:28px;height:28px;border-radius:50%;border:2.5px solid;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.15);transition:opacity .2s,transform .15s,box-shadow .15s}
 .dot:active{cursor:grabbing}
 .dot.review{border-style:dashed;animation:reviewPulse 1.5s infinite}
+.dot.selected{transform:translate(-50%,-50%) scale(1.35);box-shadow:0 0 0 4px rgba(124,115,222,.35),0 2px 8px rgba(0,0,0,.2)}
 @keyframes reviewPulse{0%,100%{box-shadow:0 0 0 0 rgba(240,165,0,.5)}50%{box-shadow:0 0 0 6px rgba(240,165,0,0)}}
 .dot-label{position:absolute;font-size:10px;white-space:nowrap;pointer-events:none;background:#fff;border:1px solid #C8C4BE;border-radius:4px;padding:2px 5px;color:#4A4844;transform:translateX(-50%);top:16px;left:50%;font-weight:500}
 .list-wrap{background:#fff;border-radius:16px;border:1.5px solid #C8C4BE;overflow:hidden}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:8px 12px;color:#4A4844;font-weight:600;border-bottom:1.5px solid #C8C4BE;font-size:11px;background:#F5F4F0;white-space:nowrap}
+th{text-align:left;padding:8px 12px;color:#4A4844;font-weight:600;border-bottom:1.5px solid #C8C4BE;font-size:11px;background:#F5F4F0;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{background:#EDECEA;color:#1A1A18}
+th.sort-active{color:#1A1A18}
+.sort-icon{display:inline-block;margin-left:3px;font-size:10px;opacity:.5}
+th.sort-active .sort-icon{opacity:1}
 td{padding:7px 10px;border-bottom:1px solid #E0DDD8;color:#272724;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#F9F8F6}
 tr.review-row td{background:#FFFBF0}
+tr.selected-row td{background:#EEF0FD !important}
 .task-name{cursor:pointer;border-radius:4px;padding:2px 4px;margin:-2px -4px;transition:background .15s}
 .task-name:hover{background:#EDECEA}
 .task-name-input{font-size:13px;font-family:inherit;color:#1A1A18;background:#fff;border:1.5px solid #7C73DE;border-radius:6px;padding:3px 7px;outline:none;width:100%;min-width:100px}
@@ -78,6 +88,8 @@ tr.review-row td{background:#FFFBF0}
 .del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;padding:0 3px;line-height:1}
 .del-btn:hover{color:#E05C32}
 .action-wrap{display:flex;flex-direction:column;gap:3px}
+.row-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.row-num:hover{transform:scale(1.15);box-shadow:0 0 0 3px rgba(124,115,222,.25)}
 .toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:#1A1A18;color:#fff;font-size:13px;padding:10px 22px;border-radius:24px;opacity:0;transform:translateY(10px);white-space:nowrap;animation:toastIn .25s forwards,toastOut .25s 2.5s forwards}
 @keyframes toastIn{to{opacity:1;transform:translateY(0)}}@keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
@@ -111,18 +123,29 @@ tr.review-row td{background:#FFFBF0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:13px;color:#6B6860}
 .version-bar{text-align:center;font-size:10px;color:#C8C4BE;padding:12px;margin-top:8px}
+/* プロジェクト並び替え */
+.project-list-wrap{list-style:none;padding:0;margin:0 0 16px}
+.project-list-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid #C8C4BE;border-radius:8px;margin-bottom:6px;background:#fff;cursor:grab;user-select:none}
+.project-list-item:active{cursor:grabbing}
+.project-list-item.drag-over{border-color:#7C73DE;background:#EEF0FD}
+.project-list-item.dragging{opacity:.4}
+.project-drag-handle{color:#C8C4BE;font-size:14px;cursor:grab}
+.project-list-name{flex:1;font-size:13px;font-weight:500;color:#1A1A18}
+.project-list-delete{background:none;border:none;cursor:pointer;color:#C8C4BE;font-size:15px;padding:0 3px;line-height:1}
+.project-list-delete:hover{color:#E05C32}
+.manage-modal{width:380px;max-width:92vw}
 @media(max-width:650px){.main{padding:10px}th.hide-sp,td.hide-sp{display:none}}
 </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text">データを読み込み中...</div></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text">データ読み込み中...</div></div>
 
 <div class="header">
   <div class="header-left"><div class="logo">E</div><div><div class="header-title">優先度マトリクス</div><div class="header-subtitle">有限会社栄都工業</div></div></div>
   <div class="header-right">
     <a class="header-btn green" href="https://docs.google.com/spreadsheets/d/1kJSLNs2PFeVdUzrmGENqGFhG2WljhJ1qvkTwGTL2Jko/edit" target="_blank">📊 実績</a>
-    <button class="header-btn" onclick="openHelp()">？ 使い方</button>
+    <button class="header-btn" onclick="openHelp()">?使い方</button>
     <div class="sync-badge"><div class="sync-dot loading" id="syncDot"></div><span id="syncLabel">接続中...</span></div>
   </div>
 </div>
@@ -131,13 +154,27 @@ tr.review-row td{background:#FFFBF0}
   <span class="project-label">プロジェクト</span>
   <select class="project-select" id="projectSelect" onchange="switchProject()"></select>
   <button class="btn-sm" onclick="openRenameProject()">✏️ 名前変更</button>
-  <button class="btn-sm dashed" onclick="openModal('project')">＋ 新規</button>
+  <button class="btn-sm dashed" onclick="openModal('project')">＋新規</button>
+  <button class="btn-sm danger" onclick="openManageProjects()">🗂️ 管理</button>
 </div>
 
 <div class="toolbar">
   <input class="task-input" id="taskInput" placeholder="タスク名を入力してEnter…" />
   <button class="add-btn" id="addBtn">追加</button>
-  <span class="hint">点をドラッグ / タスク名はダブルクリックで編集 / 📝でメモ</span>
+  <select class="filter-select" id="assigneeFilter" onchange="applyFilter()">
+    <option value="">👤 全員</option>
+  </select>
+  <select class="filter-select" id="sortSelect" onchange="applySort()" style="min-width:120px">
+    <option value="score_desc">スコア高い順</option>
+    <option value="score_asc">スコア低い順</option>
+    <option value="deadline_asc">期限近い順</option>
+    <option value="deadline_desc">期限遠い順</option>
+    <option value="created_desc">作成日新しい順</option>
+    <option value="created_asc">作成日古い順</option>
+    <option value="id_asc">番号順</option>
+    <option value="action">確認中優先</option>
+  </select>
+  <span class="hint">丸をWクリック→図にジャンプ / 図の点をWクリック→一覧にジャンプ</span>
 </div>
 
 <div class="main">
@@ -145,7 +182,7 @@ tr.review-row td{background:#FFFBF0}
   <div class="list-wrap">
     <table>
       <thead><tr>
-        <th style="width:28px"></th>
+        <th style="width:28px;cursor:default"></th>
         <th>タスク</th>
         <th class="hide-sp" style="width:44px">緊急</th>
         <th class="hide-sp" style="width:44px">重要</th>
@@ -160,10 +197,20 @@ tr.review-row td{background:#FFFBF0}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev8-20260410 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev9-20260417 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- プロジェクト管理モーダル -->
+<div class="modal-overlay" id="modal-manage" onclick="if(event.target===this)closeModal('manage')">
+  <div class="modal manage-modal">
+    <div class="modal-title">🗂️ プロジェクト管理</div>
+    <div class="modal-sub">ドラッグで並び替え／×で削除（最後の1件は削除不可）</div>
+    <ul class="project-list-wrap" id="projectListWrap"></ul>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('manage')">閉じる</button></div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modal-project" onclick="if(event.target===this)closeModal('project')">
   <div class="modal"><div class="modal-title">新規プロジェクト</div>
@@ -173,14 +220,14 @@ tr.review-row td{background:#FFFBF0}
 </div>
 
 <div class="modal-overlay" id="modal-rename" onclick="if(event.target===this)closeModal('rename')">
-  <div class="modal"><div class="modal-title">プロジェクト名を変更</div>
+  <div class="modal"><div class="modal-title">プロジェクト名の変更</div>
     <input type="text" class="modal-input" id="modalInputRename" placeholder="新しいプロジェクト名" onkeydown="if(event.key==='Enter')confirmRenameProject()">
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('rename')">キャンセル</button><button class="btn btn-primary" onclick="confirmRenameProject()">変更</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-memo" onclick="if(event.target===this)closeMemo()">
-  <div class="modal memo-modal"><div class="modal-title">📝 メモ</div>
+  <div class="modal memo-modal"><div class="modal-title">📝メモ</div>
     <div class="modal-sub" id="memoModalSub"></div>
     <textarea class="modal-textarea" id="memoTextarea" placeholder="詳細・備考・連絡事項などを自由に記入…"></textarea>
     <div class="modal-actions"><button class="btn btn-danger" onclick="clearMemo()">クリア</button><button class="btn btn-secondary" onclick="closeMemo()">キャンセル</button><button class="btn btn-primary" onclick="saveMemo()">保存</button></div>
@@ -188,7 +235,7 @@ tr.review-row td{background:#FFFBF0}
 </div>
 
 <div class="modal-overlay" id="modal-review" onclick="if(event.target===this)closeModal('review')">
-  <div class="modal"><div class="modal-title">🔲 確認依頼</div>
+  <div class="modal"><div class="modal-title">🔲確認依頼</div>
     <div class="modal-sub" id="reviewModalSub">確認してほしい人を選んでください</div>
     <select class="modal-select" id="reviewerSelect"><option value="">選択してください</option></select>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('review')">キャンセル</button><button class="btn btn-primary" onclick="confirmReview()">依頼する</button></div>
@@ -196,7 +243,7 @@ tr.review-row td{background:#FFFBF0}
 </div>
 
 <div class="modal-overlay" id="modal-sendback" onclick="if(event.target===this)closeModal('sendback')">
-  <div class="modal"><div class="modal-title">↩️ 差し戻し</div>
+  <div class="modal"><div class="modal-title">↩️差し戻し</div>
     <div class="modal-sub">修正担当者を選んでください（得点なし）</div>
     <select class="modal-select" id="sendbackSelect"><option value="">選択してください</option></select>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('sendback')">キャンセル</button><button class="btn btn-primary" onclick="confirmSendback()">差し戻す</button></div>
@@ -207,28 +254,23 @@ tr.review-row td{background:#FFFBF0}
   <div class="modal help-modal"><div class="modal-title">📊 使い方</div>
     <div class="help-body">
       <div class="step"><div class="step-num">1</div><div>タスク名を入力して「追加」またはEnterキーで追加。</div></div>
-      <div class="step"><div class="step-num">2</div><div>点をドラッグして配置。右に動かすほど緊急度↑、上に動かすほど重要度↑</div></div>
-      <div class="step"><div class="step-num">3</div><div>担当者・期限を設定。タスク名はダブルクリックで編集。📝でメモを記入できる。</div></div>
+      <div class="step"><div class="step-num">2</div><div>ポイントを割り当てて配置。右に移動ほど緊急度↑、上に移動ほど重要度↑</div></div>
+      <div class="step"><div class="step-num">3</div><div>担当者・期限を設定します。タスク名はダブルクリックで編集します。📝でメモを記入できる。</div></div>
       <div class="step"><div class="step-num">4</div><div>担当者＋期限を両方設定すると担当者のカレンダーに自動登録される。社外メンバーにはメールでも通知される。</div></div>
-      <div class="step"><div class="step-num">5</div><div>確認不要は「✅ 完了」で終了。確認が必要なら「🔲 確認依頼」で確認者を選ぶ。</div></div>
-      <div class="step"><div class="step-num">6</div><div>完了するとカレンダーからも自動削除される。</div></div>
+      <div class="step"><div class="step-num">5</div><div>確認不要は「✅完了」で終了。確認が必要な場合は「🔲確認依頼」で確認者を選びます。</div></div>
+      <div class="step"><div class="step-num">6</div><div>一覧の丸番号をダブルクリック→図にジャンプ。図の点をダブルクリック→一覧にジャンプ。</div></div>
       <h3>期限と評価</h3>
       <ul>
         <li>期限前に完了 → 通常（100%）</li>
-        <li>期限当日に完了 → 🟠 オレンジ（50%）</li>
+        <li>期限当日に完了 → 🟠オレンジ（50%）</li>
         <li>期限切れで完了 → 🔴 赤（30%）</li>
         <li>期限なしで完了 → 通常（100%）</li>
       </ul>
-      <h3>Chat通知</h3>
+      <h3>チャット通知</h3>
       <ul>
         <li>確認依頼 → 確認者にメンション通知</li>
         <li>差し戻し → 新担当者にメンション通知</li>
         <li>完了 → スペース全体に実績通知</li>
-      </ul>
-      <h3>メール通知（社外メンバーのみ）</h3>
-      <ul>
-        <li>担当者＋期限セット時 → アサイン通知メールを送信</li>
-        <li>期限変更時 → 【更新】付きで再送</li>
       </ul>
     </div>
     <div class="modal-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="closeHelp()">閉じる</button></div>
@@ -237,13 +279,25 @@ tr.review-row td{background:#FFFBF0}
 
 <script>
 const GAS_URL='https://script.google.com/macros/s/AKfycbwBELPeB1UeZynd0Oi-NexSWjlsQlJ8qmQOoTOhj1tE85l6wXr7w3gFYPecs5thKhZwuA/exec';
-const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}}});
+const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}},projectOrder:['共通']});
 const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','派遣②','未定'];
+
+// 担当者カラー定義（枠線色 / 薄背景色）
+const MEMBER_COLORS={
+  '冨田':{border:'#E8819A',bg:'rgba(232,129,154,.18)'},
+  '加藤':{border:'#6aaee8',bg:'rgba(106,174,232,.18)'},
+  '佐藤':{border:'#6abf8a',bg:'rgba(106,191,138,.18)'},
+  '瀬川':{border:'#E8A84A',bg:'rgba(232,168,74,.18)'},
+  '高橋':{border:'#9B7FD4',bg:'rgba(155,127,212,.18)'},
+  '派遣②':{border:'#E05C5C',bg:'rgba(224,92,92,.18)'},
+  '未定':{border:null,bg:null},
+};
+
 const Q={
-  A:{label:'🔥 今すぐやる',sub:'緊急 × 重要',       bg:'rgba(224,92,50,.13)', fill:'#FFE2D8',border:'#E05C32',text:'#7A2510'},
-  B:{label:'📅 計画する',  sub:'重要・余裕あり',     bg:'rgba(124,115,222,.12)',fill:'#E5E1FD',border:'#7C73DE',text:'#3B2E9A'},
-  C:{label:'🤝 誰かに任せる',sub:'緊急・重要でない', bg:'rgba(30,158,118,.12)', fill:'#BEEFD8',border:'#1E9E76',text:'#095041'},
-  D:{label:'⏸️ 後回し',   sub:'急ぎでも重要でもない',bg:'rgba(150,150,150,.10)',fill:'#E6E5E0',border:'#9A9790',text:'#4A4844'},
+  A:{label:'🔥今すぐやる',sub:'緊急×重要',bg:'rgba(224,92,50,.13)',fill:'#FFE2D8',border:'#E05C32',text:'#7A2510'},
+  B:{label:'📅計画する',sub:'重要・余裕あり',bg:'rgba(124,115,222,.12)',fill:'#E5E1FD',border:'#7C73DE',text:'#3B2E9A'},
+  C:{label:'🤝誰かに緊急委託する',sub:'緊急・重要でない',bg:'rgba(30,158,118,.12)',fill:'#BEEFD8',border:'#1E9E76',text:'#095041'},
+  D:{label:'⏸️後回し',sub:'緊急でも重要でもない',bg:'rgba(150,150,150,.10)',fill:'#E6E5E0',border:'#9A9790',text:'#4A4844'},
 };
 const REVIEW_FILL='#FFF3E0',REVIEW_BORDER='#F0A500',REVIEW_TEXT='#7A3800';
 
@@ -291,16 +345,16 @@ function upsertCalendarEvent(task){
   if(!task.deadline||!task.assignee||task.assignee==='未定')return;
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'upsertEvent',event:{
-      taskId:task.id,
-      taskName:task.name,
-      project:currentProject,
-      assignee:task.assignee,
-      deadline:task.deadline,
-      score:calcScore(task.u,task.i),
+      タスクID:task.id,
+      タスク名:task.name,
+      プロジェクト:currentProject,
+      担当者:task.assignee,
+      締め切り:task.deadline,
+      スコア:calcScore(task.u,task.i),
       eventId:task.calendarEventId||null
     }})
   });
-  showToast('📅 カレンダーに登録中...');
+  showToast('📅カレンダーに登録中...');
 }
 
 const W=Math.min(window.innerWidth-48,900),H=Math.round(W*0.56),PAD=50,LPAD=30;
@@ -310,6 +364,71 @@ const ctx=canvas.getContext('2d');
 
 let db=DEFAULT_DB(),currentProject='共通',dragging=null,idCounter=0,saveTimer=null;
 let reviewTargetId=null,sendbackTargetId=null,memoTargetId=null;
+let currentFilter='';
+let currentSort='score_desc';
+let selectedTaskId=null;
+
+// ── フィルター ──
+function applyFilter(){
+  currentFilter=document.getElementById('assigneeFilter').value;
+  renderDots();renderList();
+}
+function applySort(){
+  currentSort=document.getElementById('sortSelect').value;
+  renderList();
+}
+function updateFilterOptions(){
+  var sel=document.getElementById('assigneeFilter');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">👤 全員</option>'+
+    MEMBERS.map(function(m){return'<option value="'+m+'"'+(prev===m?' selected':'')+'>'+m+'</option>';}).join('');
+  if(prev)sel.value=prev;
+}
+function filteredTasks(){
+  var tasks=currentTasks();
+  if(!currentFilter)return tasks;
+  return tasks.filter(function(t){return(t.assignee||'未定')===currentFilter;});
+}
+function sortedTasks(tasks){
+  var s=currentSort;
+  return tasks.slice().sort(function(a,b){
+    if(s==='score_desc')return calcScore(b.u,b.i)-calcScore(a.u,a.i);
+    if(s==='score_asc')return calcScore(a.u,a.i)-calcScore(b.u,b.i);
+    if(s==='deadline_asc'){
+      var da=a.deadline||'9999',db_=b.deadline||'9999';return da<db_?-1:da>db_?1:0;
+    }
+    if(s==='deadline_desc'){
+      var da=a.deadline||'',db_=b.deadline||'';return db_<da?-1:db_>da?1:0;
+    }
+    if(s==='created_desc')return(b.createdAt||'')>(a.createdAt||'')?1:-1;
+    if(s==='created_asc')return(a.createdAt||'')>(b.createdAt||'')?1:-1;
+    if(s==='id_asc')return a.id-b.id;
+    if(s==='action'){
+      var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;
+      return ar-br||calcScore(b.u,b.i)-calcScore(a.u,a.i);
+    }
+    return calcScore(b.u,b.i)-calcScore(a.u,a.i);
+  });
+}
+
+// ── 選択連動 ──
+function selectTask(id){
+  selectedTaskId=(selectedTaskId===id)?null:id;
+  renderDots();renderList();
+}
+function jumpToRow(id){
+  selectedTaskId=id;
+  renderDots();renderList();
+  setTimeout(function(){
+    var row=document.querySelector('tr[data-task-id="'+id+'"]');
+    if(row)row.scrollIntoView({behavior:'smooth',block:'center'});
+  },50);
+}
+function jumpToDot(id){
+  selectedTaskId=id;
+  renderDots();renderList();
+  wrap.scrollIntoView({behavior:'smooth',block:'center'});
+}
 
 function currentTasks(){return(db.projects[currentProject]&&db.projects[currentProject].tasks)||[]}
 
@@ -336,13 +455,13 @@ function drawGrid(){
   ctx.beginPath();ctx.moveTo(iX,iY+iH/2);ctx.lineTo(iX+iW,iY+iH/2);ctx.stroke();
   ctx.fillStyle='rgba(40,40,40,.70)';ctx.font='12px -apple-system,sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillText('← 緊急でない　　緊急度　　緊急 →',iX+iW/2,iY+iH+8);
+  ctx.fillText('← 緊急でない　緊急度　緊急 →',iX+iW/2,iY+iH+8);
   ctx.fillStyle='rgba(40,40,40,.55)';ctx.font='11px -apple-system,sans-serif';
   ctx.textAlign='left';ctx.fillText('低',iX+3,iY+iH+8);
   ctx.textAlign='right';ctx.fillText('高',iX+iW-3,iY+iH+8);
   ctx.fillStyle='rgba(40,40,40,.70)';ctx.font='12px -apple-system,sans-serif';
   ctx.save();ctx.translate(16,iY+iH/2);ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↑ 重 要 度 ↓',0,0);ctx.restore();
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↑ 重要度 ↓',0,0);ctx.restore();
   ctx.fillStyle='rgba(40,40,40,.55)';ctx.font='11px -apple-system,sans-serif';
   ctx.textAlign='right';ctx.fillText('高',iX-6,iY+10);ctx.fillText('低',iX-6,iY+iH-10);
 }
@@ -352,19 +471,54 @@ function pxToVal(px,py){var iX=PAD+LPAD,iY=PAD,iW=W-PAD-LPAD-PAD,iH=H-PAD*2;retu
 
 function renderDots(){
   document.querySelectorAll('.dot-wrap').forEach(function(e){e.remove();});
-  currentTasks().forEach(function(t,idx){
+  var tasks=currentTasks();
+  // スコア順でz-index設定（高いほど前面）
+  var scoreRanks={};
+  tasks.slice().sort(function(a,b){return calcScore(a.u,a.i)-calcScore(b.u,b.i);})
+    .forEach(function(t,i){scoreRanks[t.id]=i+1;});
+
+  tasks.forEach(function(t,idx){
+    var hidden=currentFilter&&(t.assignee||'未定')!==currentFilter;
+    var isSelected=selectedTaskId===t.id;
     var ir=(t.status==='review');
-    var fill=ir?REVIEW_FILL:getQ(t.u,t.i).fill,border=ir?REVIEW_BORDER:getQ(t.u,t.i).border,text=ir?REVIEW_TEXT:getQ(t.u,t.i).text;
+    var qFill=ir?REVIEW_FILL:getQ(t.u,t.i).fill;
+    var qText=ir?REVIEW_TEXT:getQ(t.u,t.i).text;
+    // ④ 担当者色を枠線に適用
+    var memberColor=MEMBER_COLORS[t.assignee||'未定'];
+    var dotBorder=ir?REVIEW_BORDER:(memberColor&&memberColor.border?memberColor.border:getQ(t.u,t.i).border);
     var pos=valToPx(t.u,t.i);
     var dw=document.createElement('div');dw.style.cssText='position:absolute;left:0;top:0;pointer-events:none;';dw.className='dot-wrap';
-    var dot=document.createElement('div');dot.className='dot'+(ir?' review':'');
-    dot.style.cssText='left:'+pos.px+'px;top:'+pos.py+'px;background:'+fill+';border-color:'+border+';color:'+text+';pointer-events:all';
+    var dot=document.createElement('div');
+    dot.className='dot'+(ir?' review':'')+(isSelected?' selected':'');
+    dot.style.cssText='left:'+pos.px+'px;top:'+pos.py+'px;background:'+qFill+';border-color:'+dotBorder+';color:'+qText+
+      ';pointer-events:'+(hidden?'none':'all')+
+      ';opacity:'+(hidden?'0.12':'1')+
+      ';z-index:'+(isSelected?999:scoreRanks[t.id]+10)+
+      ';border-width:'+(isSelected?'3px':'2.5px');
     dot.textContent=idx+1;dot.dataset.id=t.id;
     var lbl=document.createElement('div');lbl.className='dot-label';
     lbl.textContent=t.name.length>14?t.name.slice(0,14)+'…':t.name;
+    if(hidden)lbl.style.display='none';
     dot.appendChild(lbl);
-    dot.addEventListener('mousedown',function(e){if(t.status==='review')return;e.preventDefault();var id=+e.currentTarget.dataset.id;dragging=currentTasks().find(function(x){return x.id===id;});});
-    dot.addEventListener('touchstart',function(e){if(t.status==='review')return;e.preventDefault();var id=+e.currentTarget.dataset.id;dragging=currentTasks().find(function(x){return x.id===id;});},{passive:false});
+    // ドラッグ
+    dot.addEventListener('mousedown',function(e){
+      if(t.status==='review'||hidden)return;
+      e.preventDefault();
+      var id=+e.currentTarget.dataset.id;
+      dragging=currentTasks().find(function(x){return x.id===id;});
+    });
+    dot.addEventListener('touchstart',function(e){
+      if(t.status==='review'||hidden)return;
+      e.preventDefault();
+      var id=+e.currentTarget.dataset.id;
+      dragging=currentTasks().find(function(x){return x.id===id;});
+    },{passive:false});
+    // ② ダブルクリックで一覧にジャンプ
+    dot.addEventListener('dblclick',function(e){
+      e.stopPropagation();
+      var id=+e.currentTarget.dataset.id;
+      jumpToRow(id);
+    });
     dw.appendChild(dot);wrap.appendChild(dw);
   });
 }
@@ -395,12 +549,12 @@ function openMemo(id){
 function saveMemo(){
   var task=currentTasks().find(function(t){return t.id===memoTargetId;});if(!task)return;
   task.memo=document.getElementById('memoTextarea').value;
-  closeMemo();renderList();scheduleSave();showToast('📝 メモを保存しました');
+  closeMemo();renderList();scheduleSave();showToast('📝メモを保存しました');
 }
 function clearMemo(){
-  if(!confirm('メモをクリアしますか？'))return;
+  if(!confirm('メモをクリアしますか?'))return;
   var task=currentTasks().find(function(t){return t.id===memoTargetId;});if(!task)return;
-  task.memo='';closeMemo();renderList();scheduleSave();showToast('🗑️ メモをクリアしました');
+  task.memo='';closeMemo();renderList();scheduleSave();showToast('🗑️メモをクリアしました');
 }
 function closeMemo(){document.getElementById('modal-memo').classList.remove('open');}
 
@@ -411,25 +565,39 @@ function setDeadline(id,val){
   upsertCalendarEvent(task);
   renderDots();renderList();scheduleSave();
 }
-
 function setAssignee(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   task.assignee=val;
   upsertCalendarEvent(task);
-  scheduleSave();
+  renderDots();scheduleSave();
 }
 
 function renderList(){
-  var tasks=currentTasks();
-  var sorted=tasks.slice().sort(function(a,b){return calcScore(b.u,b.i)-calcScore(a.u,a.i);});
-  document.getElementById('tbody').innerHTML=sorted.map(function(t,rank){
+  var tasks=filteredTasks();
+  var sorted=sortedTasks(tasks);
+  var allTasks=currentTasks();
+  document.getElementById('tbody').innerHTML=sorted.map(function(t){
     var ir=(t.status==='review');
-    var q=getQ(t.u,t.i),score=calcScore(t.u,t.i),idx=tasks.indexOf(t)+1;
-    var df=ir?REVIEW_FILL:q.fill,db_=ir?REVIEW_BORDER:q.border,dt=ir?REVIEW_TEXT:q.text;
-    var dotSt='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+df+';border:2px solid '+db_+';color:'+dt+';font-size:11px;font-weight:700';
-    var barSt='width:'+score+'%;background:'+db_+';height:100%;border-radius:3px';
-    var numSt='color:'+dt+';font-size:12px;font-weight:700;min-width:22px';
-    var memberOpts=MEMBERS.map(function(m){return'<option value="'+m+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';}).join('');
+    var isSelected=selectedTaskId===t.id;
+    var q=getQ(t.u,t.i),score=calcScore(t.u,t.i);
+    var idx=allTasks.indexOf(t)+1;
+    var memberColor=MEMBER_COLORS[t.assignee||'未定'];
+    var dotBorder=ir?REVIEW_BORDER:(memberColor&&memberColor.border?memberColor.border:q.border);
+    var dotFill=ir?REVIEW_FILL:q.fill;
+    var dotText=ir?REVIEW_TEXT:q.text;
+    var dotBg=(!ir&&memberColor&&memberColor.bg)?memberColor.bg:null;
+    var dotStyle='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;'
+      +'background:'+(dotBg||dotFill)+';border:2px solid '+dotBorder+';color:'+dotText+';font-size:11px;font-weight:700;cursor:pointer';
+    var barSt='width:'+score+'%;background:'+dotBorder+';height:100%;border-radius:3px';
+    var numSt='color:'+dotText+';font-size:12px;font-weight:700;min-width:22px';
+    // 担当者selectに色付き
+    var memberOpts=MEMBERS.map(function(m){
+      var mc=MEMBER_COLORS[m];
+      var style=mc&&mc.border?'color:'+mc.border+';font-weight:600':'';
+      return'<option value="'+m+'" style="'+style+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';
+    }).join('');
+    // 担当者セルの色
+    var assigneeColor=(memberColor&&memberColor.border&&!ir)?memberColor.border:'inherit';
     var createdStr=t.createdAt?t.createdAt.slice(0,10):'-';
     var badge=t.deadline?deadlineBadge(t.deadline):null;
     var calBadge=(t.deadline&&t.assignee&&t.assignee!=='未定')?'<br><span class="cal-badge">📅 カレンダー登録済</span>':'';
@@ -445,25 +613,25 @@ function renderList(){
         '<span class="review-badge">🔲 '+t.reviewer+'が確認中</span>'+sbBadge+
         '<div style="display:flex;gap:4px;margin-top:2px">'+
         '<button class="btn-done" onclick="completeTask('+t.id+')">✅ 完了</button>'+
-        '<button class="btn-sendback" onclick="openSendback('+t.id+')">↩️ 差戻</button>'+
+        '<button class="btn-sendback" onclick="openSendback('+t.id+')">↩️ 差戻し</button>'+
         '</div></div>';
-    } else {
+    }else{
       actionCell='<div class="action-wrap">'+
         '<button class="btn-done" onclick="completeTask('+t.id+')">✅ 完了</button>'+
-        '<button class="btn-review" onclick="openReview('+t.id+')">🔲 確認依頼</button>'+
+        '<button class="btn-review" onclick="openReview('+t.id+')">🔲確認依頼</button>'+
         sbBadge+
         '</div>';
     }
-    return '<tr'+(ir?' class="review-row"':'')+'>'+
-      '<td><span style="'+dotSt+'">'+idx+'</span></td>'+
+    return '<tr data-task-id="'+t.id+'"'+(ir?' class="review-row'+(isSelected?' selected-row':'') +'"':(isSelected?' class="selected-row"':''))+'>'+
+      '<td><span class="row-num" style="'+dotStyle+'" ondblclick="jumpToDot('+t.id+')" title="ダブルクリックで図にジャンプ">'+idx+'</span></td>'+
       '<td class="task-name-cell" data-id="'+t.id+'">'+
-        '<span class="task-name" title="ダブルクリックで編集" style="font-weight:'+(rank===0?'600':'400')+'">'+t.name+'</span>'+
+        '<span class="task-name" title="ダブルクリックで編集">'+t.name+'</span>'+
         (hasMemo?'<br><span style="font-size:10px;color:#9A9893;font-style:italic">'+t.memo.slice(0,20)+(t.memo.length>20?'…':'')+'</span>':'')+
       '</td>'+
       '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.u+'</td>'+
       '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.i+'</td>'+
       '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
-      '<td><select class="assignee-select" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select></td>'+
+      '<td><select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select></td>'+
       '<td>'+dlCell+'</td>'+
       '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
       '<td>'+actionCell+'</td>'+
@@ -486,23 +654,21 @@ function openReview(id){
     .map(function(m){return'<option value="'+m+'">'+m+'</option>';}).join('');
   document.getElementById('modal-review').classList.add('open');
 }
-
 function confirmReview(){
   var reviewer=document.getElementById('reviewerSelect').value;
-  if(!reviewer){showToast('⚠️ 確認者を選んでください');return;}
+  if(!reviewer){showToast('⚠️確認者を選んでください');return;}
   var task=currentTasks().find(function(t){return t.id===reviewTargetId;});if(!task)return;
   task.status='review';task.reviewer=reviewer;
   closeModal('review');renderDots();renderList();scheduleSave();
   showToast('🔲 「'+task.name+'」を'+reviewer+'に確認依頼しました');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'review',review:{
-      taskName:task.name,project:currentProject,
-      requester:task.assignee||'未定',reviewer:reviewer,
-      deadline:task.deadline||'',score:calcScore(task.u,task.i)
+      タスク名:task.name,プロジェクト:currentProject,
+      リクエスタ:task.assignee||'未定',レビュー担当者:reviewer,
+      締め切り:task.deadline||'',スコア:calcScore(task.u,task.i)
     }})
   });
 }
-
 function openSendback(id){
   sendbackTargetId=id;
   var sel=document.getElementById('sendbackSelect');
@@ -511,10 +677,9 @@ function openSendback(id){
     .map(function(m){return'<option value="'+m+'">'+m+'</option>';}).join('');
   document.getElementById('modal-sendback').classList.add('open');
 }
-
 function confirmSendback(){
   var newAssignee=document.getElementById('sendbackSelect').value;
-  if(!newAssignee){showToast('⚠️ 担当者を選んでください');return;}
+  if(!newAssignee){showToast('⚠️担当者を選んでください');return;}
   var task=currentTasks().find(function(t){return t.id===sendbackTargetId;});if(!task)return;
   var fromAssignee=task.reviewer||task.assignee||'未定';
   task.status='normal';task.reviewer='';task.assignee=newAssignee;
@@ -523,14 +688,13 @@ function confirmSendback(){
   showToast('↩️ 「'+task.name+'」を'+newAssignee+'に差し戻しました（'+task.sendbackCount+'回目）');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'sendback',sendback:{
-      taskName:task.name,project:currentProject,
+      タスク名:task.name,プロジェクト:currentProject,
       fromAssignee:fromAssignee,newAssignee:newAssignee,
-      score:calcScore(task.u,task.i),sendbackCount:task.sendbackCount
+      スコア:calcScore(task.u,task.i),sendbackCount:task.sendbackCount
     }})
   });
   upsertCalendarEvent(task);
 }
-
 function completeTask(id){
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   var now=nowStr();
@@ -542,29 +706,39 @@ function completeTask(id){
   }
   var evaluation=calcEvaluation(task.deadline);
   var log={
-    project:currentProject,name:task.name,assignee:task.assignee||'未定',
+    プロジェクト:currentProject,名前:task.name,担当者:task.assignee||'未定',
     createdAt:task.createdAt||'-',deadline:task.deadline||'-',
-    completedAt:now,elapsedDays:elapsedDays,
-    evaluation:evaluation.label,evaluationRate:evaluation.rate,
+    完了日時:now,経過日数:elapsedDays,
+    評価:evaluation.label,評価率:evaluation.rate,
     u:task.u,i:task.i,score:calcScore(task.u,task.i),
     sendbackCount:task.sendbackCount||0,
     calendarEventId:task.calendarEventId||null
   };
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'complete',log:log})});
+  if(selectedTaskId===id)selectedTaskId=null;
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
   renderDots();renderList();scheduleSave();
   var evalMsg=evaluation.rate<100?' (評価'+evaluation.rate+'%)':'';
-  showToast('✅ 「'+task.name+'」を完了しました（'+elapsedDays+'日）'+evalMsg);
+  showToast('✅「'+task.name+'」を完了しました（'+elapsedDays+'日）'+evalMsg);
 }
 
+// ── プロジェクト管理 ──
+function getProjectOrder(){
+  if(db.projectOrder&&db.projectOrder.length)return db.projectOrder;
+  return Object.keys(db.projects);
+}
 function renderProjectSelect(){
+  var order=getProjectOrder();
   var sel=document.getElementById('projectSelect');
-  sel.innerHTML=Object.keys(db.projects).map(function(n){return'<option value="'+n+'">'+n+'</option>';}).join('');
+  sel.innerHTML=order.map(function(n){return'<option value="'+n+'">'+n+'</option>';}).join('');
   sel.value=currentProject;
 }
 function switchProject(){
   currentProject=document.getElementById('projectSelect').value;
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
+  currentFilter='';
+  selectedTaskId=null;
+  updateFilterOptions();
   renderDots();renderList();
 }
 function openRenameProject(){
@@ -575,23 +749,93 @@ function openRenameProject(){
 function confirmRenameProject(){
   var newName=document.getElementById('modalInputRename').value.trim();
   if(!newName||newName===currentProject){closeModal('rename');return;}
-  if(db.projects[newName]){showToast('⚠️ 同じ名前のプロジェクトがあります');return;}
-  db.projects[newName]=db.projects[currentProject];delete db.projects[currentProject];
-  currentProject=newName;renderProjectSelect();scheduleSave();closeModal('rename');
+  if(db.projects[newName]){showToast('⚠️同じ名前のプロジェクトがあります');return;}
+  db.projects[newName]=db.projects[currentProject];
+  delete db.projects[currentProject];
+  var order=getProjectOrder();
+  var idx=order.indexOf(currentProject);
+  if(idx>=0)order[idx]=newName;
+  db.projectOrder=order;
+  currentProject=newName;
+  renderProjectSelect();scheduleSave();closeModal('rename');
   showToast('✅ "'+newName+'" に変更しました');
 }
-function openModal(type){document.getElementById('modal-'+type).classList.add('open');setTimeout(function(){document.getElementById('modalInputProject').focus();},150);}
+function openModal(type){
+  document.getElementById('modal-'+type).classList.add('open');
+  if(type==='project')setTimeout(function(){document.getElementById('modalInputProject').focus();},150);
+}
 function closeModal(type){document.getElementById('modal-'+type).classList.remove('open');}
 function openHelp(){document.getElementById('modal-help').classList.add('open');}
 function closeHelp(){document.getElementById('modal-help').classList.remove('open');}
 function confirmNewProject(){
   var name=document.getElementById('modalInputProject').value.trim();if(!name)return;
-  if(db.projects[name]){showToast('⚠️ 同じ名前のプロジェクトがあります');return;}
-  db.projects[name]={tasks:[]};currentProject=name;
+  if(db.projects[name]){showToast('⚠️同じ名前のプロジェクトがあります');return;}
+  db.projects[name]={tasks:[]};
+  var order=getProjectOrder();order.push(name);db.projectOrder=order;
+  currentProject=name;
   renderProjectSelect();renderDots();renderList();
   scheduleSave();closeModal('project');showToast('✅ "'+name+'" を作成しました');
   document.getElementById('modalInputProject').value='';
 }
+
+// ⑥ プロジェクト管理モーダル（削除＋ドラッグ並び替え）
+var dragProjItem=null,dragProjOver=null;
+function openManageProjects(){
+  renderProjectListModal();
+  document.getElementById('modal-manage').classList.add('open');
+}
+function renderProjectListModal(){
+  var order=getProjectOrder();
+  var ul=document.getElementById('projectListWrap');
+  ul.innerHTML='';
+  order.forEach(function(name){
+    var li=document.createElement('li');
+    li.className='project-list-item';
+    li.dataset.name=name;
+    li.draggable=true;
+    li.innerHTML='<span class="project-drag-handle">⠿</span>'+
+      '<span class="project-list-name">'+(name===currentProject?'▶ ':'')+name+'</span>'+
+      '<button class="project-list-delete" onclick="deleteProject(\''+name+'\')" title="削除">×</button>';
+    li.addEventListener('dragstart',function(e){
+      dragProjItem=li;li.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    li.addEventListener('dragend',function(){
+      li.classList.remove('dragging');
+      document.querySelectorAll('.project-list-item').forEach(function(el){el.classList.remove('drag-over');});
+      // 並び順を保存
+      var newOrder=[];
+      document.querySelectorAll('#projectListWrap .project-list-item').forEach(function(el){newOrder.push(el.dataset.name);});
+      db.projectOrder=newOrder;
+      renderProjectSelect();scheduleSave();
+    });
+    li.addEventListener('dragover',function(e){
+      e.preventDefault();
+      if(li===dragProjItem)return;
+      document.querySelectorAll('.project-list-item').forEach(function(el){el.classList.remove('drag-over');});
+      li.classList.add('drag-over');
+      var rect=li.getBoundingClientRect();
+      var after=(e.clientY-rect.top)>rect.height/2;
+      if(after){ul.insertBefore(dragProjItem,li.nextSibling);}else{ul.insertBefore(dragProjItem,li);}
+    });
+    ul.appendChild(li);
+  });
+}
+function deleteProject(name){
+  var order=getProjectOrder();
+  if(order.length<=1){showToast('⚠️ 最後のプロジェクトは削除できません');return;}
+  var taskCount=(db.projects[name]&&db.projects[name].tasks)?db.projects[name].tasks.length:0;
+  var msg=taskCount>0?
+    '「'+name+'」を削除しますか？\nタスクが'+taskCount+'件あります。全て削除されます。':
+    '「'+name+'」を削除しますか？';
+  if(!confirm(msg))return;
+  delete db.projects[name];
+  var idx=order.indexOf(name);order.splice(idx,1);db.projectOrder=order;
+  if(currentProject===name)currentProject=order[0];
+  renderProjectSelect();renderProjectListModal();renderDots();renderList();scheduleSave();
+  showToast('🗑️ "'+name+'" を削除しました');
+}
+
 function deleteTask(id){
   var task=currentTasks().find(function(t){return t.id===id;});
   if(task&&task.calendarEventId&&task.assignee){
@@ -599,13 +843,17 @@ function deleteTask(id){
       body:JSON.stringify({action:'deleteEvent',calendarId:task.assignee,eventId:task.calendarEventId})
     });
   }
+  if(selectedTaskId===id)selectedTaskId=null;
   db.projects[currentProject].tasks=currentTasks().filter(function(t){return t.id!==id;});
   renderDots();renderList();scheduleSave();
 }
 function addTask(name){
   if(!name.trim())return;
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
-  db.projects[currentProject].tasks.push({id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',memo:'',createdAt:nowStr(),status:'normal',reviewer:'',sendbackCount:0,calendarEventId:null});
+  db.projects[currentProject].tasks.push({
+    id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',memo:'',
+    createdAt:nowStr(),status:'normal',reviewer:'',sendbackCount:0,calendarEventId:null
+  });
   renderDots();renderList();scheduleSave();
 }
 function scheduleSave(){
@@ -627,6 +875,7 @@ fetch(GAS_URL)
   .then(function(json){
     if(json.ok&&json.data&&json.data.projects&&Object.keys(json.data.projects).length>0){
       db=json.data;
+      if(!db.projectOrder||!db.projectOrder.length)db.projectOrder=Object.keys(db.projects);
       Object.values(db.projects).forEach(function(p){
         (p.tasks||[]).forEach(function(t){
           if(t.id>idCounter)idCounter=t.id;
@@ -639,11 +888,12 @@ fetch(GAS_URL)
       });
     }
   })
-  .catch(function(){setSyncStatus('error','オフライン');showToast('⚠️ GAS接続失敗 - ローカルで動作中');})
+  .catch(function(){setSyncStatus('error','オフライン');showToast('⚠️ GAS 接続失敗 - ローカルで動作中');})
   .finally(function(){
-    currentProject=Object.keys(db.projects)[0];
+    currentProject=getProjectOrder()[0];
     applyDeadlineUrgency();
-    renderProjectSelect();drawGrid();renderDots();renderList();setSyncStatus('ok','同期済み');hideLoading();
+    renderProjectSelect();updateFilterOptions();drawGrid();renderDots();renderList();
+    setSyncStatus('ok','同期済み');hideLoading();
   });
 </script>
 </body>
