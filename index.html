@@ -741,12 +741,20 @@ function setDeadline(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   task.deadline=val;
   if(task.status!=='review'){var u=deadlineUrgency(val);if(u!==null)task.u=u;}
+  // 担当者も設定済みならスナップショット保存（まだなければ現在値で保存）
+  if(!task.baseU&&task.assignee&&task.assignee!=='未定'){
+    task.baseU=task.u;task.baseI=task.i;
+  }
   upsertCalendarEvent(task);
   renderDots();renderList();scheduleSave();
 }
 function setAssignee(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   task.assignee=val;
+  // 期限も設定済みならスナップショット保存
+  if(!task.baseU&&task.deadline&&val&&val!=='未定'){
+    task.baseU=task.u;task.baseI=task.i;
+  }
   upsertCalendarEvent(task);
   renderDots();scheduleSave();
 }
@@ -885,12 +893,15 @@ function completeTask(id){
     elapsedDays=diff;
   }
   var evaluation=calcEvaluation(task.deadline);
+  // スナップショットがあればそちらのスコアを使う（期限迫って緊急度が上がる前の値）
+  var evalU=task.baseU!==undefined?task.baseU:task.u;
+  var evalI=task.baseI!==undefined?task.baseI:task.i;
   var log={
     プロジェクト:currentProject,名前:task.name,担当者:task.assignee||'未定',
     createdAt:task.createdAt||'-',deadline:task.deadline||'-',
     完了日時:now,経過日数:elapsedDays,
     評価:evaluation.label,評価率:evaluation.rate,
-    u:task.u,i:task.i,score:calcScore(task.u,task.i),
+    u:evalU,i:evalI,score:calcScore(evalU,evalI),
     sendbackCount:task.sendbackCount||0,
     calendarEventId:task.calendarEventId||null
   };
@@ -1032,7 +1043,8 @@ function addTask(name){
   if(!db.projects[currentProject])db.projects[currentProject]={tasks:[]};
   db.projects[currentProject].tasks.push({
     id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',memo:'',
-    createdAt:nowStr(),status:'normal',reviewer:'',sendbackCount:0,calendarEventId:null
+    createdAt:nowStr(),status:'normal',reviewer:'',sendbackCount:0,calendarEventId:null,
+    baseU:undefined,baseI:undefined
   });
   renderDots();renderList();scheduleSave();
 }
@@ -1064,6 +1076,8 @@ fetch(GAS_URL)
           if(!t.memo)t.memo='';
           if(!t.sendbackCount)t.sendbackCount=0;
           if(!t.calendarEventId)t.calendarEventId=null;
+          if(t.baseU===undefined)t.baseU=undefined;
+          if(t.baseI===undefined)t.baseI=undefined;
         });
       });
     }
