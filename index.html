@@ -53,6 +53,11 @@ th:hover{background:#EDECEA;color:#1A1A18}
 th.sort-active{color:#1A1A18}
 .sort-icon{display:inline-block;margin-left:3px;font-size:10px;opacity:.5}
 th.sort-active .sort-icon{opacity:1}
+th[onclick]{cursor:pointer}
+th[onclick]:hover{background:#EDECEA;color:#1A1A18}
+.assignee-dropdown-item{padding:6px 14px;font-size:12px;cursor:pointer;white-space:nowrap;color:#272724}
+.assignee-dropdown-item:hover{background:#F5F4F0}
+.assignee-dropdown-item.active{font-weight:700}
 td{padding:7px 10px;border-bottom:1px solid #E0DDD8;color:#272724;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#F9F8F6}
@@ -161,19 +166,6 @@ tr.selected-row td{background:#EEF0FD !important}
 <div class="toolbar">
   <input class="task-input" id="taskInput" placeholder="タスク名を入力してEnter…" />
   <button class="add-btn" id="addBtn">追加</button>
-  <select class="filter-select" id="assigneeFilter" onchange="applyFilter()">
-    <option value="">👤 全員</option>
-  </select>
-  <select class="filter-select" id="sortSelect" onchange="applySort()" style="min-width:120px">
-    <option value="score_desc">スコア高い順</option>
-    <option value="score_asc">スコア低い順</option>
-    <option value="deadline_asc">期限近い順</option>
-    <option value="deadline_desc">期限遠い順</option>
-    <option value="created_desc">作成日新しい順</option>
-    <option value="created_asc">作成日古い順</option>
-    <option value="id_asc">番号順</option>
-    <option value="action">確認中優先</option>
-  </select>
   <span class="hint">丸をWクリック→図にジャンプ / 図の点をWクリック→一覧にジャンプ</span>
 </div>
 
@@ -182,22 +174,24 @@ tr.selected-row td{background:#EEF0FD !important}
   <div class="list-wrap">
     <table>
       <thead><tr>
-        <th style="width:28px;cursor:default"></th>
+        <th style="width:28px" onclick="cycleSort('id')" id="th-id">#<span class="sort-icon">↕</span></th>
         <th>タスク</th>
-        <th class="hide-sp" style="width:44px">緊急</th>
-        <th class="hide-sp" style="width:44px">重要</th>
-        <th style="width:110px">スコア</th>
-        <th style="width:76px">担当者</th>
-        <th style="width:140px">期限</th>
-        <th class="hide-sp" style="width:90px">作成日</th>
-        <th style="width:100px">アクション</th>
-        <th style="width:28px">📝</th>
-        <th style="width:28px"></th>
+        <th class="hide-sp" style="width:44px;cursor:default">緊急</th>
+        <th class="hide-sp" style="width:44px;cursor:default">重要</th>
+        <th style="width:110px" onclick="cycleSort('score')" id="th-score">スコア<span class="sort-icon">↕</span></th>
+        <th style="width:76px;position:relative" id="th-assignee" onclick="toggleAssigneeFilter(event)">担当者<span class="sort-icon" id="assignee-filter-icon">▼</span>
+          <div id="assigneeDropdown" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1.5px solid #C8C4BE;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:500;min-width:110px;padding:4px 0"></div>
+        </th>
+        <th style="width:140px" onclick="cycleSort('deadline')" id="th-deadline">期限<span class="sort-icon">↕</span></th>
+        <th class="hide-sp" style="width:90px" onclick="cycleSort('created')" id="th-created">作成日<span class="sort-icon">↕</span></th>
+        <th style="width:100px" onclick="cycleSort('action')" id="th-action">アクション<span class="sort-icon">↕</span></th>
+        <th style="width:28px;cursor:default">📝</th>
+        <th style="width:28px;cursor:default"></th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev9-20260417 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev10-20260417 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -368,22 +362,81 @@ let currentFilter='';
 let currentSort='score_desc';
 let selectedTaskId=null;
 
-// ── フィルター ──
-function applyFilter(){
-  currentFilter=document.getElementById('assigneeFilter').value;
-  renderDots();renderList();
-}
-function applySort(){
-  currentSort=document.getElementById('sortSelect').value;
+// ── ソート ──
+function cycleSort(key){
+  var map={
+    'score' :['score_desc','score_asc'],
+    'deadline':['deadline_asc','deadline_desc'],
+    'created':['created_desc','created_asc'],
+    'action':['action_asc','action_desc'],
+    'id':['id_asc','id_desc'],
+  };
+  var opts=map[key];if(!opts)return;
+  currentSort=(currentSort===opts[0])?opts[1]:opts[0];
+  updateSortIcons();
   renderList();
 }
-function updateFilterOptions(){
-  var sel=document.getElementById('assigneeFilter');
-  var prev=sel.value;
-  sel.innerHTML='<option value="">👤 全員</option>'+
-    MEMBERS.map(function(m){return'<option value="'+m+'"'+(prev===m?' selected':'')+'>'+m+'</option>';}).join('');
-  if(prev)sel.value=prev;
+function updateSortIcons(){
+  var thIds=['th-id','th-score','th-deadline','th-created','th-action'];
+  thIds.forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    el.classList.remove('sort-active');
+    var ic=el.querySelector('.sort-icon');if(ic)ic.textContent='↕';
+  });
+  var keyMap={
+    'score_desc':'th-score','score_asc':'th-score',
+    'deadline_asc':'th-deadline','deadline_desc':'th-deadline',
+    'created_desc':'th-created','created_asc':'th-created',
+    'action_asc':'th-action','action_desc':'th-action',
+    'id_asc':'th-id','id_desc':'th-id',
+  };
+  var activeId=keyMap[currentSort];
+  if(activeId){
+    var el=document.getElementById(activeId);if(!el)return;
+    el.classList.add('sort-active');
+    var ic=el.querySelector('.sort-icon');
+    if(ic)ic.textContent=currentSort.endsWith('_asc')?'▲':'▼';
+  }
 }
+
+// ── 担当者フィルター（ヘッダードロップダウン）──
+function toggleAssigneeFilter(e){
+  e.stopPropagation();
+  var dd=document.getElementById('assigneeDropdown');
+  if(dd.style.display==='none'){
+    var items=[{label:'（全員）',val:''}].concat(MEMBERS.map(function(m){return{label:m,val:m};}));
+    dd.innerHTML=items.map(function(item){
+      var mc=MEMBER_COLORS[item.val];
+      var color=mc&&mc.border?mc.border:'inherit';
+      var isActive=currentFilter===item.val;
+      return'<div class="assignee-dropdown-item'+(isActive?' active':'')+'" style="color:'+color+'" onclick="selectAssigneeFilter(\''+item.val+'\',event)">'+
+        (isActive?'✓ ':'')+item.label+'</div>';
+    }).join('');
+    dd.style.display='block';
+    setTimeout(function(){document.addEventListener('click',closeAssigneeFilter,{once:true});},10);
+  }else{
+    dd.style.display='none';
+  }
+}
+function selectAssigneeFilter(val,e){
+  if(e)e.stopPropagation();
+  currentFilter=val;
+  document.getElementById('assigneeDropdown').style.display='none';
+  var icon=document.getElementById('assignee-filter-icon');
+  if(currentFilter){
+    var mc=MEMBER_COLORS[currentFilter];
+    icon.textContent='●';
+    icon.style.color=mc&&mc.border?mc.border:'#1A1A18';
+  }else{
+    icon.textContent='▼';
+    icon.style.color='';
+  }
+  renderDots();renderList();
+}
+function closeAssigneeFilter(){
+  var dd=document.getElementById('assigneeDropdown');if(dd)dd.style.display='none';
+}
+function updateFilterOptions(){/* ヘッダー方式のため不要 */}
 function filteredTasks(){
   var tasks=currentTasks();
   if(!currentFilter)return tasks;
