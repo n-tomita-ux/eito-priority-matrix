@@ -139,6 +139,12 @@ tr.selected-row td{background:#EEF0FD !important}
 .project-list-delete{background:none;border:none;cursor:pointer;color:#C8C4BE;font-size:15px;padding:0 3px;line-height:1}
 .project-list-delete:hover{color:#E05C32}
 .manage-modal{width:380px;max-width:92vw}
+/* 被りタスクポップアップ */
+.overlap-popup{position:absolute;background:#fff;border:1.5px solid #C8C4BE;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:500;padding:6px 0;min-width:160px;pointer-events:all}
+.overlap-popup-title{font-size:10px;color:#9A9893;padding:4px 12px 2px;font-weight:600;border-bottom:1px solid #E0DDD8;margin-bottom:2px}
+.overlap-popup-item{display:flex;align-items:center;gap:7px;padding:6px 12px;cursor:pointer;font-size:12px;color:#272724}
+.overlap-popup-item:hover{background:#F5F4F0}
+.overlap-popup-dot{width:18px;height:18px;border-radius:50%;border:2px solid;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
 @media(max-width:650px){.main{padding:10px}th.hide-sp,td.hide-sp{display:none}}
 </style>
 </head>
@@ -176,8 +182,8 @@ tr.selected-row td{background:#EEF0FD !important}
       <thead><tr>
         <th style="width:28px" onclick="cycleSort('id')" id="th-id">#<span class="sort-icon">↕</span></th>
         <th>タスク</th>
-        <th class="hide-sp" style="width:44px;cursor:default">緊急</th>
-        <th class="hide-sp" style="width:44px;cursor:default">重要</th>
+        <th class="hide-sp" style="width:44px" onclick="cycleSort('urgency')" id="th-urgency">緊急<span class="sort-icon">↕</span></th>
+        <th class="hide-sp" style="width:44px" onclick="cycleSort('importance')" id="th-importance">重要<span class="sort-icon">↕</span></th>
         <th style="width:110px" onclick="cycleSort('score')" id="th-score">スコア<span class="sort-icon">↕</span></th>
         <th style="width:76px;position:relative" id="th-assignee" onclick="toggleAssigneeFilter(event)">担当者<span class="sort-icon" id="assignee-filter-icon">▼</span>
           <div id="assigneeDropdown" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1.5px solid #C8C4BE;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:500;min-width:110px;padding:4px 0"></div>
@@ -191,7 +197,7 @@ tr.selected-row td{background:#EEF0FD !important}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev10-20260417 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev11-20260417 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -365,11 +371,13 @@ let selectedTaskId=null;
 // ── ソート ──
 function cycleSort(key){
   var map={
-    'score' :['score_desc','score_asc'],
-    'deadline':['deadline_asc','deadline_desc'],
-    'created':['created_desc','created_asc'],
-    'action':['action_asc','action_desc'],
-    'id':['id_asc','id_desc'],
+    'score'     :['score_desc','score_asc'],
+    'deadline'  :['deadline_asc','deadline_desc'],
+    'created'   :['created_desc','created_asc'],
+    'action'    :['action_asc','action_desc'],
+    'id'        :['id_asc','id_desc'],
+    'urgency'   :['urgency_desc','urgency_asc'],
+    'importance':['importance_desc','importance_asc'],
   };
   var opts=map[key];if(!opts)return;
   currentSort=(currentSort===opts[0])?opts[1]:opts[0];
@@ -377,7 +385,7 @@ function cycleSort(key){
   renderList();
 }
 function updateSortIcons(){
-  var thIds=['th-id','th-score','th-deadline','th-created','th-action'];
+  var thIds=['th-id','th-score','th-deadline','th-created','th-action','th-urgency','th-importance'];
   thIds.forEach(function(id){
     var el=document.getElementById(id);if(!el)return;
     el.classList.remove('sort-active');
@@ -389,6 +397,8 @@ function updateSortIcons(){
     'created_desc':'th-created','created_asc':'th-created',
     'action_asc':'th-action','action_desc':'th-action',
     'id_asc':'th-id','id_desc':'th-id',
+    'urgency_desc':'th-urgency','urgency_asc':'th-urgency',
+    'importance_desc':'th-importance','importance_asc':'th-importance',
   };
   var activeId=keyMap[currentSort];
   if(activeId){
@@ -447,19 +457,18 @@ function sortedTasks(tasks){
   return tasks.slice().sort(function(a,b){
     if(s==='score_desc')return calcScore(b.u,b.i)-calcScore(a.u,a.i);
     if(s==='score_asc')return calcScore(a.u,a.i)-calcScore(b.u,b.i);
-    if(s==='deadline_asc'){
-      var da=a.deadline||'9999',db_=b.deadline||'9999';return da<db_?-1:da>db_?1:0;
-    }
-    if(s==='deadline_desc'){
-      var da=a.deadline||'',db_=b.deadline||'';return db_<da?-1:db_>da?1:0;
-    }
+    if(s==='deadline_asc'){var da=a.deadline||'9999',db_=b.deadline||'9999';return da<db_?-1:da>db_?1:0;}
+    if(s==='deadline_desc'){var da=a.deadline||'',db_=b.deadline||'';return db_<da?-1:db_>da?1:0;}
     if(s==='created_desc')return(b.createdAt||'')>(a.createdAt||'')?1:-1;
     if(s==='created_asc')return(a.createdAt||'')>(b.createdAt||'')?1:-1;
     if(s==='id_asc')return a.id-b.id;
-    if(s==='action'){
-      var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;
-      return ar-br||calcScore(b.u,b.i)-calcScore(a.u,a.i);
-    }
+    if(s==='id_desc')return b.id-a.id;
+    if(s==='urgency_desc')return b.u-a.u;
+    if(s==='urgency_asc')return a.u-b.u;
+    if(s==='importance_desc')return b.i-a.i;
+    if(s==='importance_asc')return a.i-b.i;
+    if(s==='action_asc'){var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;return ar-br||calcScore(b.u,b.i)-calcScore(a.u,a.i);}
+    if(s==='action_desc'){var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;return br-ar||calcScore(b.u,b.i)-calcScore(a.u,a.i);}
     return calcScore(b.u,b.i)-calcScore(a.u,a.i);
   });
 }
@@ -522,24 +531,70 @@ function drawGrid(){
 function valToPx(u,i){var iX=PAD+LPAD,iY=PAD,iW=W-PAD-LPAD-PAD,iH=H-PAD*2;return{px:iX+u/100*iW,py:iY+(1-i/100)*iH};}
 function pxToVal(px,py){var iX=PAD+LPAD,iY=PAD,iW=W-PAD-LPAD-PAD,iH=H-PAD*2;return{u:Math.max(0,Math.min(100,Math.round((px-iX)/iW*100))),i:Math.max(0,Math.min(100,Math.round((1-(py-iY)/iH)*100)))};}
 
+function closeOverlapPopup(){
+  var p=document.getElementById('overlapPopup');if(p)p.remove();
+}
+function showOverlapPopup(tasks,px,py){
+  closeOverlapPopup();
+  var allTasks=currentTasks();
+  var popup=document.createElement('div');
+  popup.className='overlap-popup';popup.id='overlapPopup';
+  popup.style.cssText='left:'+(px+16)+'px;top:'+(py-8)+'px;position:absolute';
+  popup.innerHTML='<div class="overlap-popup-title">重なっているタスク</div>'+
+    tasks.map(function(t){
+      var idx=allTasks.indexOf(t)+1;
+      var ir=t.status==='review';
+      var q=getQ(t.u,t.i);
+      var mc=MEMBER_COLORS[t.assignee||'未定'];
+      var border=ir?REVIEW_BORDER:(mc&&mc.border?mc.border:q.border);
+      var fill=ir?REVIEW_FILL:q.fill;
+      var text=ir?REVIEW_TEXT:q.text;
+      return'<div class="overlap-popup-item" onclick="closeOverlapPopup();jumpToRow('+t.id+')">'+
+        '<span class="overlap-popup-dot" style="background:'+fill+';border-color:'+border+';color:'+text+'">'+idx+'</span>'+
+        '<span>'+(t.name.length>16?t.name.slice(0,16)+'…':t.name)+'</span>'+
+        '</div>';
+    }).join('');
+  wrap.appendChild(popup);
+  setTimeout(function(){document.addEventListener('click',closeOverlapPopup,{once:true});},10);
+}
+
 function renderDots(){
   document.querySelectorAll('.dot-wrap').forEach(function(e){e.remove();});
+  closeOverlapPopup();
   var tasks=currentTasks();
-  // スコア順でz-index設定（高いほど前面）
   var scoreRanks={};
   tasks.slice().sort(function(a,b){return calcScore(a.u,a.i)-calcScore(b.u,b.i);})
     .forEach(function(t,i){scoreRanks[t.id]=i+1;});
+
+  // 被り検出（14px以内を同一グループ）
+  var THRESHOLD=14;
+  var grouped={};
+  tasks.forEach(function(t){
+    var pos=valToPx(t.u,t.i);
+    var key=null;
+    Object.keys(grouped).forEach(function(k){
+      var kp=grouped[k].pos;
+      if(Math.abs(kp.px-pos.px)<THRESHOLD&&Math.abs(kp.py-pos.py)<THRESHOLD)key=k;
+    });
+    if(key){grouped[key].tasks.push(t);}
+    else{grouped[t.id]={pos:pos,tasks:[t]};}
+  });
 
   tasks.forEach(function(t,idx){
     var hidden=currentFilter&&(t.assignee||'未定')!==currentFilter;
     var isSelected=selectedTaskId===t.id;
     var ir=(t.status==='review');
-    var qFill=ir?REVIEW_FILL:getQ(t.u,t.i).fill;
-    var qText=ir?REVIEW_TEXT:getQ(t.u,t.i).text;
-    // ④ 担当者色を枠線に適用
+    var q=getQ(t.u,t.i);
+    var qFill=ir?REVIEW_FILL:q.fill;
+    var qText=ir?REVIEW_TEXT:q.text;
     var memberColor=MEMBER_COLORS[t.assignee||'未定'];
-    var dotBorder=ir?REVIEW_BORDER:(memberColor&&memberColor.border?memberColor.border:getQ(t.u,t.i).border);
+    var dotBorder=ir?REVIEW_BORDER:(memberColor&&memberColor.border?memberColor.border:q.border);
     var pos=valToPx(t.u,t.i);
+    // 被りグループ取得
+    var myGroup=null;
+    Object.values(grouped).forEach(function(g){if(g.tasks.indexOf(t)>=0)myGroup=g;});
+    var isOverlap=myGroup&&myGroup.tasks.length>1;
+
     var dw=document.createElement('div');dw.style.cssText='position:absolute;left:0;top:0;pointer-events:none;';dw.className='dot-wrap';
     var dot=document.createElement('div');
     dot.className='dot'+(ir?' review':'')+(isSelected?' selected':'');
@@ -547,13 +602,13 @@ function renderDots(){
       ';pointer-events:'+(hidden?'none':'all')+
       ';opacity:'+(hidden?'0.12':'1')+
       ';z-index:'+(isSelected?999:scoreRanks[t.id]+10)+
-      ';border-width:'+(isSelected?'3px':'2.5px');
+      ';border-width:'+(isSelected?'3px':'2.5px')+
+      (isOverlap?';box-shadow:0 0 0 3px rgba(124,115,222,.3),0 1px 4px rgba(0,0,0,.15)':'');
     dot.textContent=idx+1;dot.dataset.id=t.id;
     var lbl=document.createElement('div');lbl.className='dot-label';
     lbl.textContent=t.name.length>14?t.name.slice(0,14)+'…':t.name;
     if(hidden)lbl.style.display='none';
     dot.appendChild(lbl);
-    // ドラッグ
     dot.addEventListener('mousedown',function(e){
       if(t.status==='review'||hidden)return;
       e.preventDefault();
@@ -566,11 +621,26 @@ function renderDots(){
       var id=+e.currentTarget.dataset.id;
       dragging=currentTasks().find(function(x){return x.id===id;});
     },{passive:false});
-    // ② ダブルクリックで一覧にジャンプ
     dot.addEventListener('dblclick',function(e){
       e.stopPropagation();
       var id=+e.currentTarget.dataset.id;
       jumpToRow(id);
+    });
+    // シングルクリック：被りあり→ポップアップ、被りなし→選択
+    dot.addEventListener('click',function(e){
+      if(dragging)return;
+      e.stopPropagation();
+      var id=+e.currentTarget.dataset.id;
+      var task=currentTasks().find(function(x){return x.id===id;});
+      if(!task)return;
+      var pos2=valToPx(task.u,task.i);
+      var grp=null;
+      Object.values(grouped).forEach(function(g){if(g.tasks.indexOf(task)>=0)grp=g;});
+      if(grp&&grp.tasks.length>1){
+        showOverlapPopup(grp.tasks,pos2.px,pos2.py);
+      }else{
+        selectTask(id);
+      }
     });
     dw.appendChild(dot);wrap.appendChild(dw);
   });
@@ -635,21 +705,22 @@ function renderList(){
     var q=getQ(t.u,t.i),score=calcScore(t.u,t.i);
     var idx=allTasks.indexOf(t)+1;
     var memberColor=MEMBER_COLORS[t.assignee||'未定'];
+    // 図と同じ: 枠線=担当者色、塗り=象限色、文字=象限テキスト色
     var dotBorder=ir?REVIEW_BORDER:(memberColor&&memberColor.border?memberColor.border:q.border);
     var dotFill=ir?REVIEW_FILL:q.fill;
     var dotText=ir?REVIEW_TEXT:q.text;
-    var dotBg=(!ir&&memberColor&&memberColor.bg)?memberColor.bg:null;
+    // スコアバー・数字は象限色
+    var qBorder=ir?REVIEW_BORDER:q.border;
+    var qText2=ir?REVIEW_TEXT:q.text;
     var dotStyle='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;'
-      +'background:'+(dotBg||dotFill)+';border:2px solid '+dotBorder+';color:'+dotText+';font-size:11px;font-weight:700;cursor:pointer';
-    var barSt='width:'+score+'%;background:'+dotBorder+';height:100%;border-radius:3px';
-    var numSt='color:'+dotText+';font-size:12px;font-weight:700;min-width:22px';
-    // 担当者selectに色付き
+      +'background:'+dotFill+';border:2.5px solid '+dotBorder+';color:'+dotText+';font-size:11px;font-weight:700;cursor:pointer';
+    var barSt='width:'+score+'%;background:'+qBorder+';height:100%;border-radius:3px';
+    var numSt='color:'+qText2+';font-size:12px;font-weight:700;min-width:22px';
     var memberOpts=MEMBERS.map(function(m){
       var mc=MEMBER_COLORS[m];
       var style=mc&&mc.border?'color:'+mc.border+';font-weight:600':'';
       return'<option value="'+m+'" style="'+style+'"'+(t.assignee===m?' selected':'')+'>'+m+'</option>';
     }).join('');
-    // 担当者セルの色
     var assigneeColor=(memberColor&&memberColor.border&&!ir)?memberColor.border:'inherit';
     var createdStr=t.createdAt?t.createdAt.slice(0,10):'-';
     var badge=t.deadline?deadlineBadge(t.deadline):null;
@@ -675,14 +746,14 @@ function renderList(){
         sbBadge+
         '</div>';
     }
-    return '<tr data-task-id="'+t.id+'"'+(ir?' class="review-row'+(isSelected?' selected-row':'') +'"':(isSelected?' class="selected-row"':''))+'>'+
+    return '<tr data-task-id="'+t.id+'"'+(ir?' class="review-row'+(isSelected?' selected-row':'')+('"'):(isSelected?' class="selected-row"':''))+'>'+
       '<td><span class="row-num" style="'+dotStyle+'" ondblclick="jumpToDot('+t.id+')" title="ダブルクリックで図にジャンプ">'+idx+'</span></td>'+
       '<td class="task-name-cell" data-id="'+t.id+'">'+
         '<span class="task-name" title="ダブルクリックで編集">'+t.name+'</span>'+
         (hasMemo?'<br><span style="font-size:10px;color:#9A9893;font-style:italic">'+t.memo.slice(0,20)+(t.memo.length>20?'…':'')+'</span>':'')+
       '</td>'+
-      '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.u+'</td>'+
-      '<td class="hide-sp" style="font-size:12px;color:#4A4844;font-weight:500;text-align:center">'+t.i+'</td>'+
+      '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.u+'</td>'+
+      '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.i+'</td>'+
       '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
       '<td><select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select></td>'+
       '<td>'+dlCell+'</td>'+
