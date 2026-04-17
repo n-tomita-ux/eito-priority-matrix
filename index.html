@@ -140,7 +140,7 @@ tr.selected-row td{background:#EEF0FD !important}
 .project-list-delete:hover{color:#E05C32}
 .manage-modal{width:380px;max-width:92vw}
 /* 被りタスクポップアップ */
-.overlap-popup{position:absolute;background:#fff;border:1.5px solid #C8C4BE;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:500;padding:6px 0;min-width:160px;pointer-events:all}
+.overlap-popup{background:#fff;border:1.5px solid #C8C4BE;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:9999;padding:6px 0;min-width:180px;pointer-events:all}
 .overlap-popup-title{font-size:10px;color:#9A9893;padding:4px 12px 2px;font-weight:600;border-bottom:1px solid #E0DDD8;margin-bottom:2px}
 .overlap-popup-item{display:flex;align-items:center;gap:7px;padding:6px 12px;cursor:pointer;font-size:12px;color:#272724}
 .overlap-popup-item:hover{background:#F5F4F0}
@@ -539,7 +539,7 @@ function showOverlapPopup(tasks,px,py){
   var allTasks=currentTasks();
   var popup=document.createElement('div');
   popup.className='overlap-popup';popup.id='overlapPopup';
-  popup.style.cssText='left:'+(px+16)+'px;top:'+(py-8)+'px;position:absolute';
+  popup.style.cssText='position:absolute;visibility:hidden;left:0;top:0';
   popup.innerHTML='<div class="overlap-popup-title">重なっているタスク</div>'+
     tasks.map(function(t){
       var idx=allTasks.indexOf(t)+1;
@@ -551,10 +551,34 @@ function showOverlapPopup(tasks,px,py){
       var text=ir?REVIEW_TEXT:q.text;
       return'<div class="overlap-popup-item" onclick="closeOverlapPopup();jumpToRow('+t.id+')">'+
         '<span class="overlap-popup-dot" style="background:'+fill+';border-color:'+border+';color:'+text+'">'+idx+'</span>'+
-        '<span>'+(t.name.length>16?t.name.slice(0,16)+'…':t.name)+'</span>'+
+        '<span>'+(t.name.length>18?t.name.slice(0,18)+'…':t.name)+'</span>'+
         '</div>';
     }).join('');
-  wrap.appendChild(popup);
+  // wrapの外（body直下）に追加して枠外に出られるようにする
+  document.body.appendChild(popup);
+  // wrap基準の絶対座標をpage座標に変換
+  var wrapRect=wrap.getBoundingClientRect();
+  var pageX=wrapRect.left+px+window.scrollX;
+  var pageY=wrapRect.top+py+window.scrollY;
+  popup.style.visibility='hidden';
+  popup.style.position='fixed'; // fixedで画面基準
+  popup.style.left=(wrapRect.left+px+16)+'px';
+  popup.style.top=(wrapRect.top+py-8)+'px';
+  // サイズ取得して画面端チェック
+  var pw=popup.offsetWidth,ph=popup.offsetHeight;
+  var vw=window.innerWidth,vh=window.innerHeight;
+  var left=wrapRect.left+px+16;
+  var top=wrapRect.top+py-8;
+  // 右端はみ出し → 左側に表示
+  if(left+pw>vw-8)left=wrapRect.left+px-pw-8;
+  // 下端はみ出し → 上にずらす
+  if(top+ph>vh-8)top=vh-ph-8;
+  // 上端はみ出し
+  if(top<8)top=8;
+  popup.style.left=left+'px';
+  popup.style.top=top+'px';
+  popup.style.zIndex='9999';
+  popup.style.visibility='visible';
   setTimeout(function(){document.addEventListener('click',closeOverlapPopup,{once:true});},10);
 }
 
