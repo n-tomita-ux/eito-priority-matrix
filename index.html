@@ -414,7 +414,9 @@ var assigneeFilterOpen=false;
 function toggleAssigneeFilter(e){
   e.stopPropagation();
   var dd=document.getElementById('assigneeDropdown');
-  if(assigneeFilterOpen){
+  // フラグではなくDOM状態で判定
+  var isOpen=dd&&dd.style.display==='block';
+  if(isOpen){
     dd.style.display='none';
     assigneeFilterOpen=false;
     return;
@@ -431,7 +433,8 @@ function toggleAssigneeFilter(e){
   assigneeFilterOpen=true;
   setTimeout(function(){
     document.addEventListener('click',function handler(){
-      dd.style.display='none';
+      var dd2=document.getElementById('assigneeDropdown');
+      if(dd2)dd2.style.display='none';
       assigneeFilterOpen=false;
       document.removeEventListener('click',handler);
     });
@@ -731,6 +734,7 @@ function setAssignee(id,val){
 }
 
 function renderList(){
+  assigneeFilterOpen=false;
   var tasks=filteredTasks();
   var sorted=sortedTasks(tasks);
   var allTasks=currentTasks();
