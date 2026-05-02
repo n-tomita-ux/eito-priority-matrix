@@ -144,6 +144,11 @@ tr.selected-row td{background:#EEF0FD !important}
 .overlap-popup-item:hover{background:#F5F4F0}
 .overlap-popup-dot{width:18px;height:18px;border-radius:50%;border:2px solid;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
 @media(max-width:650px){.main{padding:10px}th.hide-sp,td.hide-sp{display:none}}
+.unassigned-section{background:#F5F4F0;border:1.5px dashed #C8C4BE;border-radius:12px;margin-bottom:12px;overflow:hidden}
+.unassigned-header{padding:8px 16px;font-size:12px;font-weight:700;color:#6B6860;background:#EDECEA;border-bottom:1px solid #C8C4BE;display:flex;align-items:center;gap:6px}
+.unassigned-count{background:#C8C4BE;color:#4A4844;border-radius:10px;font-size:10px;padding:1px 7px;font-weight:700}
+.btn-confirm-score{padding:3px 10px;font-size:11px;font-weight:600;border:1.5px solid #7C73DE;border-radius:6px;background:#E5E1FD;color:#3B2E9A;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-confirm-score:hover{background:#cdc7f7}
 </style>
 </head>
 <body>
@@ -175,6 +180,7 @@ tr.selected-row td{background:#EEF0FD !important}
 
 <div class="main">
   <div id="canvasWrap"><canvas id="canvas"></canvas></div>
+  <div id="unassignedArea"></div>
   <div class="list-wrap">
     <table>
       <thead><tr>
@@ -194,7 +200,7 @@ tr.selected-row td{background:#EEF0FD !important}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev12-20260417 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev13-20260502 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -277,7 +283,7 @@ tr.selected-row td{background:#EEF0FD !important}
 <script>
 const GAS_URL='https://script.google.com/macros/s/AKfycbwBELPeB1UeZynd0Oi-NexSWjlsQlJ8qmQOoTOhj1tE85l6wXr7w3gFYPecs5thKhZwuA/exec';
 const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}},projectOrder:['共通']});
-const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','派遣②','未定'];
+const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','石井','未定'];
 
 const MEMBER_COLORS={
   '冨田':{border:'#E8819A',bg:'rgba(232,129,154,.18)'},
@@ -285,7 +291,7 @@ const MEMBER_COLORS={
   '佐藤':{border:'#6abf8a',bg:'rgba(106,191,138,.18)'},
   '瀬川':{border:'#E8A84A',bg:'rgba(232,168,74,.18)'},
   '高橋':{border:'#9B7FD4',bg:'rgba(155,127,212,.18)'},
-  '派遣②':{border:'#E05C5C',bg:'rgba(224,92,92,.18)'},
+  '石井':{border:'#E05C5C',bg:'rgba(224,92,92,.18)'},
   '未定':{border:null,bg:null},
 };
 
@@ -634,9 +640,8 @@ function setAssignee(id,val){
   upsertCalendarEvent(task);renderDots();scheduleSave();
 }
 
-function renderList(){
-  var tasks=filteredTasks(),sorted=sortedTasks(tasks),allTasks=currentTasks();
-  document.getElementById('tbody').innerHTML=sorted.map(function(t){
+function makeRow(t,allTasks){
+
     var ir=(t.status==='review'),isSelected=selectedTaskId===t.id;
     var q=getQ(t.u,t.i),score=calcScore(t.u,t.i),idx=allTasks.indexOf(t)+1;
     var memberColor=MEMBER_COLORS[t.assignee||'未定'];
@@ -684,14 +689,32 @@ function renderList(){
       '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.u+'</td>'+
       '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.i+'</td>'+
       '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
-      '<td><select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select></td>'+
+      '<td>'+(t.scoreConfirmed
+        ?'<select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select>'
+        :'<button class="btn-confirm-score" onclick="confirmScore('+t.id+')">✔ 確定</button>'
+      )+'</td>'+
       '<td>'+dlCell+'</td>'+
       '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
       '<td>'+actionCell+'</td>'+
       '<td>'+memoBtn+'</td>'+
       '<td><button class="del-btn" onclick="deleteTask('+t.id+')">×</button></td>'+
     '</tr>';
-  }).join('');
+  }
+
+function renderList(){
+  var tasks=filteredTasks(),sorted=sortedTasks(tasks),allTasks=currentTasks();
+  var unassigned=sorted.filter(function(t){return !t.assignee||t.assignee===''||t.assignee==='未定';});
+  var assigned=sorted.filter(function(t){return t.assignee&&t.assignee!==''&&t.assignee!=='未定';});
+  var uArea=document.getElementById('unassignedArea');
+  if(unassigned.length>0){
+    uArea.innerHTML='<div class="unassigned-section">'+
+      '<div class="unassigned-header">👤 担当者未決定 <span class="unassigned-count">'+unassigned.length+'</span></div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:13px"><tbody>'+
+      unassigned.map(function(t){return makeRow(t,allTasks);}).join('')+
+      '</tbody></table></div>';
+  }else{uArea.innerHTML='';}
+  document.getElementById('tbody').innerHTML=assigned.map(function(t){return makeRow(t,allTasks);}).join('');
+  // 未担当エリアのtask-name-cellもイベント登録
   document.querySelectorAll('.task-name-cell').forEach(function(td){
     td.addEventListener('dblclick',function(){startEditTaskName(+td.dataset.id,td);});
   });
@@ -741,6 +764,15 @@ function confirmSendback(){
     }})
   });
   upsertCalendarEvent(task);
+}
+
+
+// スコア確定：担当者選択を解放する
+function confirmScore(id){
+  var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
+  task.scoreConfirmed=true;
+  renderList();renderDots();scheduleSave();
+  showToast('✔ スコアを確定しました。担当者を設定できます');
 }
 
 // ★ 修正箇所：logオブジェクトのキーを英語に統一
@@ -875,7 +907,7 @@ function addTask(name){
   db.projects[currentProject].tasks.push({
     id:++idCounter,name:name.trim(),u:50,i:50,assignee:'',deadline:'',memo:'',
     createdAt:nowStr(),status:'normal',reviewer:'',sendbackCount:0,calendarEventId:null,
-    baseU:undefined,baseI:undefined
+    baseU:undefined,baseI:undefined,scoreConfirmed:false
   });
   renderDots();renderList();scheduleSave();
 }
@@ -906,6 +938,7 @@ fetch(GAS_URL)
           if(!t.memo)t.memo='';if(!t.sendbackCount)t.sendbackCount=0;
           if(!t.calendarEventId)t.calendarEventId=null;
           if(t.baseU===undefined)t.baseU=undefined;if(t.baseI===undefined)t.baseI=undefined;
+          if(t.scoreConfirmed===undefined)t.scoreConfirmed=!!(t.assignee&&t.assignee!==''&&t.assignee!=='未定');
         });
       });
     }
