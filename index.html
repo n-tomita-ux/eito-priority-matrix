@@ -200,7 +200,7 @@ tr.selected-row td{background:#EEF0FD !important}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev13-20260502 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev14-20260502 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -643,7 +643,9 @@ function setAssignee(id,val){
 function makeRow(t,allTasks){
 
     var ir=(t.status==='review'),isSelected=selectedTaskId===t.id;
-    var q=getQ(t.u,t.i),score=calcScore(t.u,t.i),idx=allTasks.indexOf(t)+1;
+    var dispU=t.baseU!==undefined?t.baseU:t.u;
+    var dispI=t.baseI!==undefined?t.baseI:t.i;
+    var q=getQ(t.u,t.i),score=calcScore(dispU,dispI),idx=allTasks.indexOf(t)+1;
     var memberColor=MEMBER_COLORS[t.assignee||'未定'];
     var dotBorder=ir?REVIEW_BORDER:(memberColor&&memberColor.border?memberColor.border:q.border);
     var dotFill=ir?REVIEW_FILL:q.fill,dotText=ir?REVIEW_TEXT:q.text;
@@ -771,8 +773,11 @@ function confirmSendback(){
 function confirmScore(id){
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   task.scoreConfirmed=true;
+  // 確定時点のu/iをスナップショットとして保存（期限迫りによる自動上昇の影響を受けないように）
+  task.baseU=task.u;
+  task.baseI=task.i;
   renderList();renderDots();scheduleSave();
-  showToast('✔ スコアを確定しました。担当者を設定できます');
+  showToast('✔ スコアを確定しました（緊急度'+task.u+'・重要度'+task.i+'）');
 }
 
 // ★ 修正箇所：logオブジェクトのキーを英語に統一
