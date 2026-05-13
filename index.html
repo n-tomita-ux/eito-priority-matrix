@@ -128,6 +128,12 @@ tr.selected-row td{background:#EEF0FD !important}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:13px;color:#6B6860}
 .version-bar{text-align:center;font-size:10px;color:#C8C4BE;padding:12px;margin-top:8px}
+.lock-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:#E05C32;color:#fff;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3);animation:slideDown .3s ease}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.lock-banner-msg{display:flex;align-items:center;gap:8px}
+.lock-banner-actions{display:flex;gap:8px}
+.btn-force-unlock{padding:5px 14px;font-size:12px;font-weight:600;border:1.5px solid #fff;border-radius:20px;background:transparent;color:#fff;cursor:pointer;font-family:inherit}
+.btn-force-unlock:hover{background:rgba(255,255,255,.2)}
 .project-list-wrap{list-style:none;padding:0;margin:0 0 16px}
 .project-list-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid #C8C4BE;border-radius:8px;margin-bottom:6px;background:#fff;cursor:grab;user-select:none}
 .project-list-item:active{cursor:grabbing}
@@ -164,6 +170,12 @@ tr.selected-row td{background:#EEF0FD !important}
   </div>
 </div>
 
+<div id="lockBanner" class="lock-banner" style="display:none">
+  <div class="lock-banner-msg">🔒 <span id="lockBannerMsg">現在別のユーザーが編集中です。保存はブロックされています。</span></div>
+  <div class="lock-banner-actions">
+    <button class="btn-force-unlock" onclick="forceUnlock()">強制終了して引き継ぐ</button>
+  </div>
+</div>
 <div class="project-bar">
   <span class="project-label">プロジェクト</span>
   <select class="project-select" id="projectSelect" onchange="switchProject()"></select>
@@ -200,7 +212,7 @@ tr.selected-row td{background:#EEF0FD !important}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev14-20260502 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev15-20260502 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -282,6 +294,93 @@ tr.selected-row td{background:#EEF0FD !important}
 
 <script>
 const GAS_URL='https://script.google.com/macros/s/AKfycbwBELPeB1UeZynd0Oi-NexSWjlsQlJ8qmQOoTOhj1tE85l6wXr7w3gFYPecs5thKhZwuA/exec';
+
+// ── セッションロック管理 ──
+const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
+let isLocked = false;  // 自分がロックを持っているか
+let lockCheckTimer = null;
+
+function acquireLock() {
+  fetch(GAS_URL + '?action=lockAcquire&sessionId=' + SESSION_ID)
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      if(json.ok && json.acquired){
+        isLocked = true;
+        document.getElementById('lockBanner').style.display = 'none';
+        // 30秒ごとにハートビート送信
+        lockCheckTimer = setInterval(heartbeat, 30000);
+      } else {
+        // 他のセッションがロック中
+        isLocked = false;
+        var since = json.since ? '（' + json.since + ' から使用中）' : '';
+        document.getElementById('lockBannerMsg').textContent =
+          '🔒 現在別のユーザーが編集中です' + since + '。保存はブロックされています。';
+        document.getElementById('lockBanner').style.display = 'flex';
+        // 15秒ごとに再チェック
+        lockCheckTimer = setInterval(recheckLock, 15000);
+      }
+    })
+    .catch(function(){ isLocked = true; }); // オフライン時はロック取得扱い
+}
+
+function heartbeat() {
+  if(!isLocked) return;
+  fetch(GAS_URL + '?action=lockHeartbeat&sessionId=' + SESSION_ID)
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      if(!json.ok || !json.valid){
+        // ロックが別セッションに奪われた
+        isLocked = false;
+        clearInterval(lockCheckTimer);
+        document.getElementById('lockBannerMsg').textContent =
+          '⚠️ 別のユーザーに引き継がれました。このタブでの保存はできません。';
+        document.getElementById('lockBanner').style.display = 'flex';
+      }
+    }).catch(function(){});
+}
+
+function recheckLock() {
+  fetch(GAS_URL + '?action=lockStatus')
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      if(!json.locked){
+        // ロック解放された → 取得を試みる
+        clearInterval(lockCheckTimer);
+        acquireLock();
+      } else {
+        var since = json.since ? '（' + json.since + ' から使用中）' : '';
+        document.getElementById('lockBannerMsg').textContent =
+          '🔒 現在別のユーザーが編集中です' + since + '。保存はブロックされています。';
+      }
+    }).catch(function(){});
+}
+
+function releaseLock() {
+  if(!isLocked) return;
+  // sendBeaconで確実に送信（ページ閉じ時）
+  var url = GAS_URL + '?action=lockRelease&sessionId=' + SESSION_ID;
+  try { navigator.sendBeacon(url); } catch(e) {
+    fetch(url, {method:'GET', keepalive:true}).catch(function(){});
+  }
+}
+
+function forceUnlock() {
+  if(!confirm('強制終了して引き継ぎますか？\n編集中の相手の変更が失われる可能性があります。')) return;
+  fetch(GAS_URL + '?action=lockForce&sessionId=' + SESSION_ID)
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      if(json.ok){
+        clearInterval(lockCheckTimer);
+        isLocked = true;
+        document.getElementById('lockBanner').style.display = 'none';
+        lockCheckTimer = setInterval(heartbeat, 30000);
+        showToast('🔓 引き継ぎました。編集できます。');
+      }
+    }).catch(function(){});
+}
+
+window.addEventListener('beforeunload', function(){ releaseLock(); });
+window.addEventListener('pagehide',     function(){ releaseLock(); });
 const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}},projectOrder:['共通']});
 const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','石井','未定'];
 
@@ -917,6 +1016,11 @@ function addTask(name){
   renderDots();renderList();scheduleSave();
 }
 function scheduleSave(){
+  if(!isLocked){
+    setSyncStatus('error','🔒 保存ブロック中');
+    showToast('⚠️ 別のユーザーが編集中のため保存できません');
+    return;
+  }
   clearTimeout(saveTimer);setSyncStatus('loading','保存中...');
   saveTimer=setTimeout(function(){
     fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(db)})
@@ -953,6 +1057,7 @@ fetch(GAS_URL)
     currentProject=getProjectOrder()[0];applyDeadlineUrgency();
     renderProjectSelect();updateFilterOptions();drawGrid();renderDots();renderList();
     setSyncStatus('ok','同期済み');hideLoading();
+    acquireLock(); // セッションロック取得
   });
 </script>
 </body>
