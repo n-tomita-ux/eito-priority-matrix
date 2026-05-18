@@ -212,7 +212,7 @@ tr.selected-row td{background:#EEF0FD !important}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">Rev15-20260502 | 優先度マトリクス｜有限会社栄都工業</div>
+  <div class="version-bar">Rev16-20260502 | 優先度マトリクス｜有限会社栄都工業</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -379,8 +379,60 @@ function forceUnlock() {
     }).catch(function(){});
 }
 
-window.addEventListener('beforeunload', function(){ releaseLock(); });
-window.addEventListener('pagehide',     function(){ releaseLock(); });
+
+// ── 自動更新（8:00〜18:00、30秒ごと、ロック待機中のみ）──
+var autoReloadTimer = null;
+
+function isBusinessHours() {
+  var h = new Date().getHours();
+  return h >= 8 && h < 18;
+}
+
+function startAutoReload() {
+  stopAutoReload();
+  autoReloadTimer = setInterval(function() {
+    if (isLocked) return;          // 自分がロック中は更新しない
+    if (!isBusinessHours()) return; // 業務時間外はスキップ
+    autoReloadData();
+  }, 30000);
+}
+
+function stopAutoReload() {
+  if (autoReloadTimer) { clearInterval(autoReloadTimer); autoReloadTimer = null; }
+}
+
+function autoReloadData() {
+  fetch(GAS_URL)
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      if (!json.ok || !json.data) return;
+      if (isLocked) return; // 取得完了前にロックを取得していたらスキップ
+      db = json.data;
+      if (!db.projectOrder || !db.projectOrder.length) db.projectOrder = Object.keys(db.projects);
+      Object.values(db.projects).forEach(function(p){
+        (p.tasks||[]).forEach(function(t){
+          if (t.id > idCounter) idCounter = t.id;
+          if (!t.status) t.status = 'normal';
+          if (!t.reviewer) t.reviewer = '';
+          if (!t.memo) t.memo = '';
+          if (!t.sendbackCount) t.sendbackCount = 0;
+          if (!t.calendarEventId) t.calendarEventId = null;
+          if (t.baseU === undefined) t.baseU = undefined;
+          if (t.baseI === undefined) t.baseI = undefined;
+          if (t.scoreConfirmed === undefined) t.scoreConfirmed = !!(t.assignee && t.assignee !== '' && t.assignee !== '未定');
+        });
+      });
+      applyDeadlineUrgency();
+      renderProjectSelect();
+      renderDots();
+      renderList();
+      setSyncStatus('ok', '自動更新済み');
+    })
+    .catch(function(){ /* サイレントに失敗 */ });
+}
+
+window.addEventListener('beforeunload', function(){ stopAutoReload(); releaseLock(); });
+window.addEventListener('pagehide',     function(){ stopAutoReload(); releaseLock(); });
 const DEFAULT_DB=()=>({projects:{'共通':{tasks:[]}},projectOrder:['共通']});
 const MEMBERS=['冨田','加藤','佐藤','瀬川','高橋','石井','未定'];
 
@@ -1058,6 +1110,7 @@ fetch(GAS_URL)
     renderProjectSelect();updateFilterOptions();drawGrid();renderDots();renderList();
     setSyncStatus('ok','同期済み');hideLoading();
     acquireLock(); // セッションロック取得
+    startAutoReload(); // 自動更新開始
   });
 </script>
 </body>
