@@ -170,11 +170,11 @@ tr.selected-row td{background:#EEF0FD !important}
 .tmpl-category-badge.common{background:#BEEFD8;color:#095041;border-color:#1E9E76}
 .tmpl-hint{font-size:11px;color:#9A9893;margin-bottom:12px;padding:6px 10px;background:#F5F4F0;border-radius:6px}
 .tmpl-edit-list{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;margin-bottom:12px}
-.tmpl-edit-row{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 24px;gap:5px;align-items:center;padding:8px 10px;border:1.5px solid #C8C4BE;border-radius:8px;background:#fff}
+.tmpl-edit-row{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 46px 24px;gap:5px;align-items:center;padding:8px 10px;border:1.5px solid #C8C4BE;border-radius:8px;background:#fff}
 .tmpl-edit-input{font-size:12px;font-family:inherit;color:#1A1A18;background:#EDECEA;border:1.5px solid #C8C4BE;border-radius:6px;padding:4px 7px;outline:none;width:100%}
 .tmpl-edit-input:focus{border-color:#888;background:#fff}
 .tmpl-edit-label{font-size:10px;color:#9A9893;text-align:center;margin-bottom:2px}
-.tmpl-edit-header{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 24px;gap:5px;padding:0 10px;margin-bottom:4px}
+.tmpl-edit-header{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 46px 24px;gap:5px;padding:0 10px;margin-bottom:4px}
 .koki-modal{width:380px;max-width:92vw}
 .koki-row{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
 .koki-label{font-size:12px;color:#6B6860;font-weight:500}
@@ -361,7 +361,8 @@ tr.selected-row td{background:#EEF0FD !important}
       <div class="tmpl-edit-label">種別</div>
       <div class="tmpl-edit-label">重要</div>
       <div class="tmpl-edit-label">緊急</div>
-      <div class="tmpl-edit-label">+日</div>
+      <div class="tmpl-edit-label">開始</div>
+      <div class="tmpl-edit-label">完了</div>
       <div></div>
     </div>
     <div class="tmpl-edit-list" id="tmplEditList"></div>
@@ -510,8 +511,6 @@ function setTmplFilter(cat) {
 }
 
 function renderTmplList() {
-  var koki      = getCurrentKoki();
-  var startDate = koki ? koki.startDate : '';
   var filtered  = tmplFilter === 'すべて' ? templates : templates.filter(function(t){
     return t.category === tmplFilter;
   });
@@ -522,15 +521,24 @@ function renderTmplList() {
     return;
   }
   list.innerHTML = filtered.map(function(t){
-    var isCommon = t.category === '共通';
+    var isCommon  = t.category === '共通';
+    var koki      = getCurrentKoki();
+    var startDate = koki ? koki.startDate : '';
+    var endDate   = koki ? koki.endDate   : '';
     var dlStr = '';
-    if(t.offsetDays !== '' && t.offsetDays !== null && t.offsetDays !== undefined) {
+    if(t.startOffset !== '' && t.startOffset !== null && t.startOffset !== undefined) {
       if(startDate) {
-        var d = new Date(startDate);
-        d.setDate(d.getDate() + Number(t.offsetDays));
-        dlStr = '期限: ' + d.toLocaleDateString('ja-JP') + '（開始+' + t.offsetDays + '日）';
+        var d = new Date(startDate); d.setDate(d.getDate() + Number(t.startOffset));
+        dlStr = '期限: ' + d.toLocaleDateString('ja-JP') + '（開始' + (t.startOffset >= 0 ? '+' : '') + t.startOffset + '日）';
       } else {
-        dlStr = '開始日+' + t.offsetDays + '日（工期未設定）';
+        dlStr = '開始' + (t.startOffset >= 0 ? '+' : '') + t.startOffset + '日（工期未設定）';
+      }
+    } else if(t.endOffset !== '' && t.endOffset !== null && t.endOffset !== undefined) {
+      if(endDate) {
+        var d = new Date(endDate); d.setDate(d.getDate() + Number(t.endOffset));
+        dlStr = '期限: ' + d.toLocaleDateString('ja-JP') + '（完了' + (t.endOffset >= 0 ? '+' : '') + t.endOffset + '日）';
+      } else {
+        dlStr = '完了' + (t.endOffset >= 0 ? '+' : '') + t.endOffset + '日（工期未設定）';
       }
     }
     var safeId = String(t.id).replace(/'/g,"\\'");
@@ -552,18 +560,21 @@ function toggleTmplCheck(id) {
 }
 
 function applyTemplates() {
-  var koki      = getCurrentKoki();
-  var startDate = koki ? koki.startDate : '';
   var filtered  = tmplFilter === 'すべて' ? templates : templates.filter(function(t){ return t.category === tmplFilter; });
   var added = 0;
 
   filtered.forEach(function(t) {
     var cb = document.getElementById('tc_' + t.id);
     if(!cb || !cb.checked) return;
-    var deadline = '';
-    if(t.offsetDays !== '' && t.offsetDays !== null && t.offsetDays !== undefined && startDate) {
-      var d = new Date(startDate);
-      d.setDate(d.getDate() + Number(t.offsetDays));
+    var koki      = getCurrentKoki();
+    var startDate = koki ? koki.startDate : '';
+    var endDate   = koki ? koki.endDate   : '';
+    var deadline  = '';
+    if(t.startOffset !== '' && t.startOffset !== null && t.startOffset !== undefined && startDate) {
+      var d = new Date(startDate); d.setDate(d.getDate() + Number(t.startOffset));
+      deadline = d.toISOString().slice(0,10);
+    } else if(t.endOffset !== '' && t.endOffset !== null && t.endOffset !== undefined && endDate) {
+      var d = new Date(endDate); d.setDate(d.getDate() + Number(t.endOffset));
       deadline = d.toISOString().slice(0,10);
     }
     if(!db.projects[currentProject]) db.projects[currentProject] = {tasks:[]};
@@ -605,7 +616,8 @@ function renderTmplEditList() {
       '<select class="tmpl-edit-input" onchange="tmplEditData[' + idx + '].category=this.value">' + selOpts + '</select>' +
       '<input class="tmpl-edit-input" type="number" min="0" max="100" placeholder="50" value="' + (t.importance||50) + '" oninput="tmplEditData[' + idx + '].importance=+this.value" title="重要度(0-100)">' +
       '<input class="tmpl-edit-input" type="number" min="0" max="100" placeholder="50" value="' + (t.urgency||50) + '" oninput="tmplEditData[' + idx + '].urgency=+this.value" title="緊急度(0-100)">' +
-      '<input class="tmpl-edit-input" type="number" placeholder="-" value="' + (t.offsetDays !== '' && t.offsetDays !== null && t.offsetDays !== undefined ? t.offsetDays : '') + '" oninput="tmplEditData[' + idx + '].offsetDays=this.value===\'\'?\'\':(+this.value)" title="工事開始日からのオフセット日数">' +
+      '<input class="tmpl-edit-input" type="number" placeholder="-" value="' + (t.startOffset !== '' && t.startOffset !== null && t.startOffset !== undefined ? t.startOffset : '') + '" oninput="tmplEditData[' + idx + '].startOffset=this.value===\'\'?\'\':(+this.value)" title="工事開始日からのオフセット日数">' +
+      '<input class="tmpl-edit-input" type="number" placeholder="-" value="' + (t.endOffset   !== '' && t.endOffset   !== null && t.endOffset   !== undefined ? t.endOffset   : '') + '" oninput="tmplEditData[' + idx + '].endOffset=this.value===\'\'?\'\':(+this.value)"   title="工事完了日からのオフセット日数">' +
       '<button class="del-btn" onclick="removeTmplRow(' + idx + ')" title="削除">×</button>' +
     '</div>';
   }).join('');
@@ -615,7 +627,7 @@ function addTmplRow() {
   tmplEditData.push({
     id: 'tmpl_' + Date.now(),
     category: currentProject || '共通',
-    taskName: '', importance: 50, urgency: 50, offsetDays: '', note: ''
+    taskName: '', importance: 50, urgency: 50, startOffset: '', endOffset: '', note: ''
   });
   renderTmplEditList();
   var list = document.getElementById('tmplEditList');
