@@ -170,11 +170,11 @@ tr.selected-row td{background:#EEF0FD !important}
 .tmpl-category-badge.common{background:#BEEFD8;color:#095041;border-color:#1E9E76}
 .tmpl-hint{font-size:11px;color:#9A9893;margin-bottom:12px;padding:6px 10px;background:#F5F4F0;border-radius:6px}
 .tmpl-edit-list{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;margin-bottom:12px}
-.tmpl-edit-row{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 46px 24px;gap:5px;align-items:center;padding:8px 10px;border:1.5px solid #C8C4BE;border-radius:8px;background:#fff}
+.tmpl-edit-row{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 46px 52px 24px;gap:5px;align-items:center;padding:8px 10px;border:1.5px solid #C8C4BE;border-radius:8px;background:#fff}
 .tmpl-edit-input{font-size:12px;font-family:inherit;color:#1A1A18;background:#EDECEA;border:1.5px solid #C8C4BE;border-radius:6px;padding:4px 7px;outline:none;width:100%}
 .tmpl-edit-input:focus{border-color:#888;background:#fff}
 .tmpl-edit-label{font-size:10px;color:#9A9893;text-align:center;margin-bottom:2px}
-.tmpl-edit-header{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 46px 24px;gap:5px;padding:0 10px;margin-bottom:4px}
+.tmpl-edit-header{display:grid;grid-template-columns:1fr 110px 46px 46px 46px 46px 52px 24px;gap:5px;padding:0 10px;margin-bottom:4px}
 .koki-modal{width:380px;max-width:92vw}
 .koki-row{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
 .koki-label{font-size:12px;color:#6B6860;font-weight:500}
@@ -363,6 +363,7 @@ tr.selected-row td{background:#EEF0FD !important}
       <div class="tmpl-edit-label">緊急</div>
       <div class="tmpl-edit-label">開始</div>
       <div class="tmpl-edit-label">完了</div>
+      <div class="tmpl-edit-label">繰返</div>
       <div></div>
     </div>
     <div class="tmpl-edit-list" id="tmplEditList"></div>
@@ -617,7 +618,8 @@ function renderTmplEditList() {
       '<input class="tmpl-edit-input" type="number" min="0" max="100" placeholder="50" value="' + (t.importance||50) + '" oninput="tmplEditData[' + idx + '].importance=+this.value" title="重要度(0-100)">' +
       '<input class="tmpl-edit-input" type="number" min="0" max="100" placeholder="50" value="' + (t.urgency||50) + '" oninput="tmplEditData[' + idx + '].urgency=+this.value" title="緊急度(0-100)">' +
       '<input class="tmpl-edit-input" type="number" placeholder="-" value="' + (t.startOffset !== '' && t.startOffset !== null && t.startOffset !== undefined ? t.startOffset : '') + '" oninput="tmplEditData[' + idx + '].startOffset=this.value===\'\'?\'\':(+this.value)" title="工事開始日からのオフセット日数">' +
-      '<input class="tmpl-edit-input" type="number" placeholder="-" value="' + (t.endOffset   !== '' && t.endOffset   !== null && t.endOffset   !== undefined ? t.endOffset   : '') + '" oninput="tmplEditData[' + idx + '].endOffset=this.value===\'\'?\'\':(+this.value)"   title="工事完了日からのオフセット日数">' +
+      '<input class="tmpl-edit-input" type="number" placeholder="-" value="' + (t.endOffset   !== '' && t.endOffset   !== null && t.endOffset   !== undefined ? t.endOffset   : '') + '" oninput="tmplEditData[' + idx + '].endOffset=this.value===\'\'?\'\':(+this.value)" title="工事完了日からのオフセット日数">' +
+      '<input class="tmpl-edit-input" placeholder="月/1日" value="' + escHtml(t.repeat || '') + '" oninput="tmplEditData[' + idx + '].repeat=this.value" title="繰り返し曜日(月火水木金土日)または日付(1日,15日など)">' +
       '<button class="del-btn" onclick="removeTmplRow(' + idx + ')" title="削除">×</button>' +
     '</div>';
   }).join('');
@@ -627,7 +629,7 @@ function addTmplRow() {
   tmplEditData.push({
     id: 'tmpl_' + Date.now(),
     category: currentProject || '共通',
-    taskName: '', importance: 50, urgency: 50, startOffset: '', endOffset: '', note: ''
+    taskName: '', importance: 50, urgency: 50, startOffset: '', endOffset: '', repeat: '', note: ''
   });
   renderTmplEditList();
   var list = document.getElementById('tmplEditList');
