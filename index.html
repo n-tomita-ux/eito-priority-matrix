@@ -197,7 +197,7 @@ tr.selected-row td{background:#EEF0FD !important}
 </div>
 
 <div id="lockBanner" class="lock-banner" style="display:none">
-  <div class="lock-banner-msg">🔒 <span id="lockBannerMsg">現在別のユーザーが編集中です。保存はブロックされています。</span></div>
+  <div class="lock-banner-msg">🔒 <span id="lockBannerMsg">現在別のユーザーが編集中です。読み取り専用です。</span></div>
   <div class="lock-banner-actions"><button class="btn-force-unlock" onclick="forceUnlock()">強制終了して引き継ぐ</button></div>
 </div>
 
@@ -438,8 +438,10 @@ function saveKoki() {
     projectMaster.push({ name: currentProject, startDate: newStart, endDate: newEnd, note: newNote });
   }
 
-  fetch(GAS_URL + '?action=saveProjectMaster&data=' + encodeURIComponent(JSON.stringify(projectMaster)))
-    .catch(function(){});
+  fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'saveProjectMaster', data: projectMaster })
+  }).catch(function(){});
 
   updateDateBadge();
   closeModal('koki');
@@ -661,6 +663,17 @@ const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2)
 var isLocked = false;
 var lockCheckTimer = null;
 
+function setReadOnly(on) {
+  var inp = document.getElementById('taskInput');
+  var btn = document.getElementById('addBtn');
+  inp.disabled = on;
+  btn.disabled = on;
+  inp.placeholder = on ? '🔒 読み取り専用' : 'タスク名を入力してEnter…';
+  inp.style.opacity = on ? '0.5' : '';
+  btn.style.opacity = on ? '0.5' : '';
+  wrap._readOnly = on;
+}
+
 function acquireLock() {
   fetch(GAS_URL + '?action=lockAcquire&sessionId=' + SESSION_ID)
     .then(function(r){ return r.json(); })
@@ -669,12 +682,14 @@ function acquireLock() {
         isLocked = true;
         document.getElementById('lockBanner').style.display = 'none';
         lockCheckTimer = setInterval(heartbeat, 30000);
+        setReadOnly(false);
       } else {
         isLocked = false;
         var since = json.since ? '（' + json.since + ' から使用中）' : '';
-        document.getElementById('lockBannerMsg').textContent = '🔒 現在別のユーザーが編集中です' + since + '。保存はブロックされています。';
+        document.getElementById('lockBannerMsg').textContent = '🔒 現在別のユーザーが編集中です' + since + '。読み取り専用です。';
         document.getElementById('lockBanner').style.display = 'flex';
         lockCheckTimer = setInterval(recheckLock, 15000);
+        setReadOnly(true);
       }
     }).catch(function(){ isLocked = true; });
 }
@@ -687,8 +702,9 @@ function heartbeat() {
       if(!json.ok || !json.valid){
         isLocked = false;
         clearInterval(lockCheckTimer);
-        document.getElementById('lockBannerMsg').textContent = '⚠️ 別のユーザーに引き継がれました。このタブでの保存はできません。';
+        document.getElementById('lockBannerMsg').textContent = '⚠️ 別のユーザーに引き継がれました。このタブでの操作はできません。';
         document.getElementById('lockBanner').style.display = 'flex';
+        setReadOnly(true);
       }
     }).catch(function(){});
 }
@@ -700,7 +716,7 @@ function recheckLock() {
       if(!json.locked){ clearInterval(lockCheckTimer); acquireLock(); }
       else {
         var since = json.since ? '（' + json.since + ' から使用中）' : '';
-        document.getElementById('lockBannerMsg').textContent = '🔒 現在別のユーザーが編集中です' + since + '。保存はブロックされています。';
+        document.getElementById('lockBannerMsg').textContent = '🔒 現在別のユーザーが編集中です' + since + '。読み取り専用です。';
       }
     }).catch(function(){});
 }
@@ -720,6 +736,7 @@ function forceUnlock() {
         clearInterval(lockCheckTimer); isLocked = true;
         document.getElementById('lockBanner').style.display = 'none';
         lockCheckTimer = setInterval(heartbeat, 30000);
+        setReadOnly(false);
         showToast('🔓 引き継ぎました。編集できます。');
       }
     }).catch(function(){});
@@ -1017,8 +1034,8 @@ function renderDots(){
     lbl.textContent=t.name.length>14?t.name.slice(0,14)+'…':t.name;
     if(hidden) lbl.style.display='none';
     dot.appendChild(lbl);
-    dot.addEventListener('mousedown',function(e){ if(t.status==='review'||hidden) return; e.preventDefault(); var id=+e.currentTarget.dataset.id; dragging=currentTasks().find(function(x){ return x.id===id; }); });
-    dot.addEventListener('touchstart',function(e){ if(t.status==='review'||hidden) return; e.preventDefault(); var id=+e.currentTarget.dataset.id; dragging=currentTasks().find(function(x){ return x.id===id; }); },{passive:false});
+    dot.addEventListener('mousedown',function(e){ if(t.status==='review'||hidden||wrap._readOnly) return; e.preventDefault(); var id=+e.currentTarget.dataset.id; dragging=currentTasks().find(function(x){ return x.id===id; }); });
+    dot.addEventListener('touchstart',function(e){ if(t.status==='review'||hidden||wrap._readOnly) return; e.preventDefault(); var id=+e.currentTarget.dataset.id; dragging=currentTasks().find(function(x){ return x.id===id; }); },{passive:false});
     dot.addEventListener('dblclick',function(e){ e.stopPropagation(); jumpToRow(+e.currentTarget.dataset.id); });
     dot.addEventListener('click',function(e){
       if(dragging) return; e.stopPropagation();
@@ -1031,12 +1048,13 @@ function renderDots(){
   });
 }
 
-wrap.addEventListener('mousemove',function(e){ if(!dragging) return; var r=wrap.getBoundingClientRect(); var v=pxToVal(e.clientX-r.left,e.clientY-r.top); dragging.u=v.u; dragging.i=v.i; renderDots(); renderList(); });
-wrap.addEventListener('touchmove',function(e){ if(!dragging) return; e.preventDefault(); var r=wrap.getBoundingClientRect(); var v=pxToVal(e.touches[0].clientX-r.left,e.touches[0].clientY-r.top); dragging.u=v.u; dragging.i=v.i; renderDots(); renderList(); },{passive:false});
+wrap.addEventListener('mousemove',function(e){ if(!dragging||wrap._readOnly) return; var r=wrap.getBoundingClientRect(); var v=pxToVal(e.clientX-r.left,e.clientY-r.top); dragging.u=v.u; dragging.i=v.i; renderDots(); renderList(); });
+wrap.addEventListener('touchmove',function(e){ if(!dragging||wrap._readOnly) return; e.preventDefault(); var r=wrap.getBoundingClientRect(); var v=pxToVal(e.touches[0].clientX-r.left,e.touches[0].clientY-r.top); dragging.u=v.u; dragging.i=v.i; renderDots(); renderList(); },{passive:false});
 window.addEventListener('mouseup', function(){ if(dragging){ dragging=null; scheduleSave(); } });
 window.addEventListener('touchend',function(){ if(dragging){ dragging=null; scheduleSave(); } });
 
 function startEditTaskName(id,td){
+  if(wrap._readOnly) return;
   var task=currentTasks().find(function(t){ return t.id===id; }); if(!task||task.status==='review') return;
   var inp=document.createElement('input'); inp.className='task-name-input'; inp.value=task.name;
   td.innerHTML=''; td.appendChild(inp); inp.focus(); inp.select();
@@ -1053,11 +1071,13 @@ function openMemo(id){
   setTimeout(function(){ document.getElementById('memoTextarea').focus(); },150);
 }
 function saveMemo(){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため保存できません'); return; }
   var task=currentTasks().find(function(t){ return t.id===memoTargetId; }); if(!task) return;
   task.memo=document.getElementById('memoTextarea').value;
   closeMemo(); renderList(); scheduleSave(); showToast('📝 メモを保存しました');
 }
 function clearMemo(){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため保存できません'); return; }
   if(!confirm('メモをクリアしますか？')) return;
   var task=currentTasks().find(function(t){ return t.id===memoTargetId; }); if(!task) return;
   task.memo=''; closeMemo(); renderList(); scheduleSave(); showToast('🗑️ メモをクリアしました');
@@ -1065,6 +1085,7 @@ function clearMemo(){
 function closeMemo(){ document.getElementById('modal-memo').classList.remove('open'); }
 
 function setDeadline(id,val){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため変更できません'); renderList(); return; }
   var task=currentTasks().find(function(t){ return t.id===id; }); if(!task) return;
   task.deadline=val;
   if(task.status!=='review'){ var u=deadlineUrgency(val); if(u!==null) task.u=u; }
@@ -1072,6 +1093,7 @@ function setDeadline(id,val){
   upsertCalendarEvent(task); renderDots(); renderList(); scheduleSave();
 }
 function setAssignee(id,val){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため変更できません'); renderList(); return; }
   var task=currentTasks().find(function(t){ return t.id===id; }); if(!task) return;
   task.assignee=val;
   if(!task.baseU&&task.deadline&&val&&val!=='未定'){ task.baseU=task.u; task.baseI=task.i; }
@@ -1154,6 +1176,7 @@ function renderList(){
 }
 
 function openReview(id){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため操作できません'); return; }
   reviewTargetId=id; var task=currentTasks().find(function(t){ return t.id===id; });
   document.getElementById('reviewModalSub').textContent='「'+task.name+'」の確認者を選んでください';
   var sel=document.getElementById('reviewerSelect');
@@ -1172,6 +1195,7 @@ function confirmReview(){
   });
 }
 function openSendback(id){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため操作できません'); return; }
   sendbackTargetId=id; var sel=document.getElementById('sendbackSelect');
   sel.innerHTML='<option value="">選択してください</option>'+
     MEMBERS.filter(function(m){ return m!=='未定'; }).map(function(m){ return'<option value="'+m+'">'+m+'</option>'; }).join('');
@@ -1192,6 +1216,7 @@ function confirmSendback(){
 }
 
 function confirmScore(id){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため操作できません'); return; }
   var task=currentTasks().find(function(t){ return t.id===id; }); if(!task) return;
   task.scoreConfirmed=true; task.baseU=task.u; task.baseI=task.i;
   renderList(); renderDots(); scheduleSave();
@@ -1199,6 +1224,7 @@ function confirmScore(id){
 }
 
 function completeTask(id){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため操作できません'); return; }
   var task=currentTasks().find(function(t){ return t.id===id; }); if(!task) return;
   var now=nowStr(), elapsedDays='-';
   if(task.createdAt){ var created=new Date(task.createdAt.replace(/\//g,'-')); var diff=Math.floor((new Date()-created)/864e5); elapsedDays=diff; }
@@ -1241,7 +1267,6 @@ function confirmRenameProject(){
   db.projects[newName]=db.projects[currentProject]; delete db.projects[currentProject];
   var order=getProjectOrder(), idx=order.indexOf(currentProject); if(idx>=0) order[idx]=newName;
   db.projectOrder=order; currentProject=newName;
-  // プロジェクトマスタも更新
   var pi=projectMaster.findIndex(function(p){ return p.name===currentProject; });
   if(pi>=0) projectMaster[pi].name=newName;
   renderProjectSelect(); scheduleSave(); closeModal('rename');
@@ -1298,6 +1323,7 @@ function deleteProject(name){
 }
 
 function deleteTask(id){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため削除できません'); return; }
   var task=currentTasks().find(function(t){ return t.id===id; });
   if(task&&task.assignee&&task.assignee!=='未定'){
     fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
@@ -1309,6 +1335,7 @@ function deleteTask(id){
   renderDots(); renderList(); scheduleSave();
 }
 function addTask(name){
+  if(wrap._readOnly){ showToast('🔒 読み取り専用のため追加できません'); return; }
   if(!name.trim()) return;
   if(!db.projects[currentProject]) db.projects[currentProject]={tasks:[]};
   db.projects[currentProject].tasks.push({
@@ -1319,7 +1346,7 @@ function addTask(name){
   renderDots(); renderList(); scheduleSave();
 }
 function scheduleSave(){
-  if(!isLocked){ setSyncStatus('error','🔒 保存ブロック中'); showToast('⚠️ 別のユーザーが編集中のため保存できません'); return; }
+  if(!isLocked){ setSyncStatus('error','🔒 読み取り専用'); return; }
   clearTimeout(saveTimer); setSyncStatus('loading','保存中...');
   saveTimer=setTimeout(function(){
     fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(db)})
