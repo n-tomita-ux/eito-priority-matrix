@@ -219,6 +219,7 @@ tr.selected-row td{background:#EEF0FD !important}
     <select class="project-select" id="projectSelect" onchange="switchProject()"></select>
     <span id="projectDateBadge" class="koki-badge" style="display:none"></span>
     <button class="btn-sm" onclick="openKokiModal()">🗓️ 工期</button>
+  <a id="projectFolderLink" href="#" target="_blank" class="btn-sm" style="display:none;text-decoration:none">🗂️ フォルダ</a>
     <button class="btn-sm" onclick="openRenameProject()">✏️ 名前変更</button>
     <button class="btn-sm dashed" onclick="openModal('project')">＋新規</button>
     <button class="btn-sm danger" onclick="openManageProjects()">🗂️ 管理</button>
@@ -345,6 +346,7 @@ tr.selected-row td{background:#EEF0FD !important}
     <div class="koki-row"><label class="koki-label">工事開始日</label><input type="date" class="koki-input" id="kokiStart"></div>
     <div class="koki-row"><label class="koki-label">工事終了日</label><input type="date" class="koki-input" id="kokiEnd"></div>
     <div class="koki-row"><label class="koki-label">備考</label><input type="text" class="koki-input" id="kokiNote" placeholder="例：○○ビル新築工事"></div>
+    <div class="koki-row"><label class="koki-label">DriveフォルダURL</label><input type="url" class="koki-input" id="kokiUrl" placeholder="https://drive.google.com/drive/folders/..."></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('koki')">キャンセル</button>
       <button class="btn btn-primary" onclick="saveKoki()">保存</button>
@@ -414,12 +416,21 @@ function getCurrentKoki() {
 }
 function updateDateBadge() {
   var badge = document.getElementById('projectDateBadge');
+  var link  = document.getElementById('projectFolderLink');
   var koki  = getCurrentKoki();
   if(koki && (koki.startDate || koki.endDate)) {
     badge.style.display = '';
     badge.textContent   = '🗓️ ' + (koki.startDate || '?') + ' 〜 ' + (koki.endDate || '?');
   } else {
     badge.style.display = 'none';
+  }
+  if(link) {
+    if(koki && koki.url) {
+      link.href = koki.url;
+      link.style.display = '';
+    } else {
+      link.style.display = 'none';
+    }
   }
 }
 
@@ -429,12 +440,14 @@ function openKokiModal() {
   document.getElementById('kokiStart').value = koki.startDate || '';
   document.getElementById('kokiEnd').value   = koki.endDate   || '';
   document.getElementById('kokiNote').value  = koki.note      || '';
+  document.getElementById('kokiUrl').value   = koki.url       || '';
   document.getElementById('modal-koki').classList.add('open');
 }
 function saveKoki() {
   var newStart = document.getElementById('kokiStart').value;
   var newEnd   = document.getElementById('kokiEnd').value;
   var newNote  = document.getElementById('kokiNote').value.trim();
+  var newUrl   = document.getElementById('kokiUrl').value.trim();
   var old      = getCurrentKoki();
   var oldStart = old ? old.startDate : '';
   var idx = projectMaster.findIndex(function(p){ return p.name === currentProject; });
@@ -442,8 +455,9 @@ function saveKoki() {
     projectMaster[idx].startDate = newStart;
     projectMaster[idx].endDate   = newEnd;
     projectMaster[idx].note      = newNote;
+    projectMaster[idx].url       = newUrl;
   } else {
-    projectMaster.push({ name: currentProject, startDate: newStart, endDate: newEnd, note: newNote });
+    projectMaster.push({ name: currentProject, startDate: newStart, endDate: newEnd, note: newNote, url: newUrl });
   }
   fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveProjectMaster', data: projectMaster }) }).catch(function(){});
   updateDateBadge();
