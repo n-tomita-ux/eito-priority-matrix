@@ -875,18 +875,37 @@ function renderProjectThead() {
   '</tr>';
 }
 
+function cycleSortMember(key) {
+  var map = {
+    project:  ['project_asc',  'project_desc'],
+    score:    ['score_desc',   'score_asc'],
+    deadline: ['deadline_asc', 'deadline_desc'],
+    created:  ['created_desc', 'created_asc'],
+  };
+  var opts = map[key]; if(!opts) return;
+  currentSort = (currentSort === opts[0]) ? opts[1] : opts[0];
+  renderMemberThead();
+  renderMemberList();
+}
+
 function renderMemberThead() {
+  function mth(key, label, style) {
+    var isActive = currentSort.startsWith(key);
+    var icon = isActive ? (currentSort.endsWith('_asc') ? '▲' : '▼') : '↕';
+    var activeClass = isActive ? ' sort-active' : '';
+    return '<th class="' + activeClass + '" style="cursor:pointer;' + (style||'') + '" onclick="cycleSortMember(\'' + key + '\')">' + label + '<span class="sort-icon">' + icon + '</span></th>';
+  }
   document.getElementById('mainThead').innerHTML = '<tr>' +
     '<th style="width:28px">#</th>' +
     '<th>タスク</th>' +
-    '<th style="width:120px">プロジェクト</th>' +
-    '<th class="hide-sp" style="width:44px">緊急</th>' +
-    '<th class="hide-sp" style="width:44px">重要</th>' +
-    '<th style="width:110px">スコア</th>' +
-    '<th style="width:76px">担当者</th>' +
-    '<th style="width:140px">期限</th>' +
-    '<th class="hide-sp" style="width:90px">作成日</th>' +
-    '<th style="width:100px">アクション</th>' +
+    mth('project',  'プロジェクト', 'width:120px') +
+    '<th class="hide-sp" style="width:44px;cursor:default">緊急</th>' +
+    '<th class="hide-sp" style="width:44px;cursor:default">重要</th>' +
+    mth('score',    'スコア',       'width:110px') +
+    '<th style="width:76px;cursor:default">担当者</th>' +
+    mth('deadline', '期限',         'width:140px') +
+    mth('created',  '作成日',       'width:90px')  +
+    '<th style="width:100px;cursor:default">アクション</th>' +
     '<th style="width:28px;cursor:default">📝</th>' +
     '<th style="width:28px;cursor:default"></th>' +
   '</tr>';
@@ -897,7 +916,18 @@ function renderMemberList() {
   if(currentMemberFilter) {
     allPairs = allPairs.filter(function(p){ return (p.task.assignee||'未定')===currentMemberFilter; });
   }
-  allPairs.sort(function(a,b){ return calcScore(b.task.u,b.task.i)-calcScore(a.task.u,a.task.i); });
+  allPairs.sort(function(a,b){
+    var s = currentSort;
+    if(s==='project_asc')  return a.project<b.project?-1:a.project>b.project?1:0;
+    if(s==='project_desc') return b.project<a.project?-1:b.project>a.project?1:0;
+    if(s==='score_desc')   return calcScore(b.task.u,b.task.i)-calcScore(a.task.u,a.task.i);
+    if(s==='score_asc')    return calcScore(a.task.u,a.task.i)-calcScore(b.task.u,b.task.i);
+    if(s==='deadline_asc') { var da=a.task.deadline||'9999',db_=b.task.deadline||'9999'; return da<db_?-1:da>db_?1:0; }
+    if(s==='deadline_desc'){ var da=a.task.deadline||'',   db_=b.task.deadline||'';    return db_<da?-1:db_>da?1:0; }
+    if(s==='created_desc') return (b.task.createdAt||'')>(a.task.createdAt||'')?1:-1;
+    if(s==='created_asc')  return (a.task.createdAt||'')>(b.task.createdAt||'')?1:-1;
+    return calcScore(b.task.u,b.task.i)-calcScore(a.task.u,a.task.i);
+  });
 
   var unassigned = allPairs.filter(function(p){ return !p.task.assignee||p.task.assignee===''||p.task.assignee==='未定'; });
   var assigned   = allPairs.filter(function(p){ return  p.task.assignee&&p.task.assignee!==''&&p.task.assignee!=='未定'; });
