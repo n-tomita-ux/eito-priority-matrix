@@ -1279,6 +1279,8 @@ function renderList(){
   var tasks=filteredTasks(),sorted=sortedTasks(tasks),allTasks=currentTasks();
   var unassigned=sorted.filter(function(t){return !t.assignee||t.assignee===''||t.assignee==='未定';});
   var assigned=sorted.filter(function(t){return t.assignee&&t.assignee!==''&&t.assignee!=='未定';});
+  var taskTh=document.querySelector('#mainThead th:nth-child(2)');
+  if(taskTh) taskTh.innerHTML='タスク <span class="unassigned-count" style="background:#1A1A18;color:#fff">'+assigned.length+'</span>';
   var uArea=document.getElementById('unassignedArea');
   if(unassigned.length>0){
     uArea.innerHTML='<div class="unassigned-section">'+
