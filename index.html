@@ -831,21 +831,21 @@ function switchViewTab(tab) {
 
 function renderMemberChips() {
   var chips = document.getElementById('memberChips');
-  var all = ['全員'].concat(MEMBERS);
+  var all = ['全員'].concat(MEMBERS.map(function(m){ return m==='未定'?'未決定':m; }));
   chips.innerHTML = all.map(function(m) {
-    var mc = MEMBER_COLORS[m] || {};
+    var mc = MEMBER_COLORS[filterVal] || {};
     var isAll = (m==='全員');
-    var isActive = isAll ? currentMemberFilter==='' : currentMemberFilter===m;
+    var filterVal = m==='未決定' ? '未定' : m;
+    var isActive = isAll ? currentMemberFilter==='' : currentMemberFilter===filterVal;
     var borderColor = (!isAll && mc.border) ? mc.border : (isActive ? '#1A1A18' : '#C8C4BE');
     var bg   = isActive ? (isAll ? '#1A1A18' : (mc.bg||'#EDECEA')) : '#fff';
     var color = isActive ? (isAll ? '#fff' : (mc.border||'#1A1A18')) : '#6B6860';
     var fw = isActive ? '700' : '500';
-    return '<button class="member-chip" style="background:'+bg+';color:'+color+';border-color:'+borderColor+';font-weight:'+fw+'" onclick="selectMemberChip(\''+m+'\')">'+m+'</button>';
-  }).join('');
+    return '<button class="member-chip" style="background:'+bg+';color:'+color+';border-color:'+borderColor+';font-weight:'+fw+'" onclick="selectMemberChip(\''+m+'\')">'+m+'</button>';  }).join('');
 }
 
 function selectMemberChip(m) {
-  currentMemberFilter = (m==='全員') ? '' : m;
+  currentMemberFilter = (m==='全員') ? '' : (m==='未決定' ? '未定' : m);
   renderMemberChips();
   renderMemberList();
 }
@@ -933,7 +933,8 @@ function renderMemberList() {
   var assigned   = allPairs.filter(function(p){ return  p.task.assignee&&p.task.assignee!==''&&p.task.assignee!=='未定'; });
 
   var uArea = document.getElementById('unassignedArea');
-  if(unassigned.length>0 && !currentMemberFilter) {
+  // 「全員」または「未定」選択時にunassignedセクションを表示
+  if(unassigned.length>0 && (!currentMemberFilter || currentMemberFilter==='未定')) {
     uArea.innerHTML = '<div class="unassigned-section">' +
       '<div class="unassigned-header">👤 担当者未決定 <span class="unassigned-count">'+unassigned.length+'</span></div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:13px"><tbody>' +
