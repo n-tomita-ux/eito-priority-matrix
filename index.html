@@ -258,7 +258,7 @@ tr.selected-row td{background:#EEF0FD !important}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">優先度マトリクス｜有限会社栄都工業　Rev18-20260609　©2026 Eito Kogyo</div>
+  <div class="version-bar">優先度マトリクス｜有限会社栄都工業　Rev19-20260616　©2026 Eito Kogyo</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -798,7 +798,7 @@ function toggleAssigneeFilter(e){
 }
 function selectAssigneeFilter(val,e){ if(e)e.stopPropagation();currentFilter=val;closeAssigneeFilter();var icon=document.getElementById('assignee-filter-icon');if(currentFilter){var mc=MEMBER_COLORS[currentFilter];icon.textContent='●';icon.style.color=mc&&mc.border?mc.border:'#1A1A18';}else{icon.textContent='▼';icon.style.color='';}renderDots();renderList(); }
 function closeAssigneeFilter(){ var dd=document.getElementById('assigneeDropdown');if(dd)dd.remove();assigneeFilterOpen=false;document.removeEventListener('click',closeAssigneeFilter); }
-function filteredTasks(){ var tasks=currentTasks();if(!currentFilter)return tasks;return tasks.filter(function(t){return(t.assignee||'未定')===currentFilter;}); }
+function filteredTasks(){ var tasks=currentTasks();if(!currentFilter)return tasks;return tasks.filter(function(t){return(t.assignee||'未定')===currentFilter||(t.status==='review'&&t.reviewer===currentFilter);}); }
 function sortedTasks(tasks){
   var s=currentSort;
   return tasks.slice().sort(function(a,b){
@@ -935,7 +935,7 @@ function renderMemberThead() {
 function renderMemberList() {
   var allPairs = getAllTasksAcrossProjects();
   if(currentMemberFilter) {
-    allPairs = allPairs.filter(function(p){ return (p.task.assignee||'未定')===currentMemberFilter; });
+    allPairs = allPairs.filter(function(p){ return (p.task.assignee||'未定')===currentMemberFilter||(p.task.status==='review'&&p.task.reviewer===currentMemberFilter); });
   }
   allPairs.sort(function(a,b){
     var s = currentSort;
@@ -1021,11 +1021,12 @@ function makeMemberRow(t, pName) {
     '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.u+'</td>'+
     '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.i+'</td>'+
     '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
-    '<td>'+(t.scoreConfirmed
-      ?'<select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssigneeMember('+t.id+',\''+escHtml(pName)+'\',this.value)"><option value="">-</option>'+memberOpts+'</select>'
-      :'<button class="btn-confirm-score" onclick="confirmScoreMember('+t.id+',\''+escHtml(pName)+'\')">✔ 確定</button>'
+    '<td>'+(ir
+      ?'<select class="assignee-select" style="color:#F0A500;font-weight:600" onchange="setReviewerMember('+t.id+',\''+escHtml(pName)+'\',this.value)">'+MEMBERS.filter(function(m){return m!=='未定';}).map(function(m){return'<option value="'+m+'"'+(t.reviewer===m?' selected':'')+'>'+m+'</option>';}).join('')+'</select>'
+      :t.scoreConfirmed
+        ?'<select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssigneeMember('+t.id+',\''+escHtml(pName)+'\',this.value)"><option value="">-</option>'+memberOpts+'</select>'
+        :'<button class="btn-confirm-score" onclick="confirmScoreMember('+t.id+',\''+escHtml(pName)+'\')">✔ 確定</button>'
     )+'</td>'+
-    '<td>'+dlCell+'</td>'+
     '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
     '<td>'+actionCell+'</td>'+
     '<td>'+memoBtn+'</td>'+
@@ -1225,6 +1226,18 @@ function setDeadline(id,val){
   if(!task.baseU&&task.assignee&&task.assignee!=='未定'){task.baseU=task.u;task.baseI=task.i;}
   upsertCalendarEvent(task);renderDots();renderList();scheduleSave();
 }
+function setReviewer(id,val){
+  if(wrap._readOnly){showToast('🔒 読み取り専用のため変更できません');renderList();return;}
+  var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
+  task.reviewer=val;
+  renderList();scheduleSave();
+}
+function setReviewerMember(id,pName,val){
+  var saved=currentProject;currentProject=pName;
+  setReviewer(id,val);
+  currentProject=saved;
+  if(currentViewTab==='member')renderMemberList();
+}
 function setAssignee(id,val){
   if(wrap._readOnly){showToast('🔒 読み取り専用のため変更できません');renderList();return;}
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
@@ -1277,9 +1290,11 @@ function makeRow(t,allTasks){
     '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.u+'</td>'+
     '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.i+'</td>'+
     '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
-    '<td>'+(t.scoreConfirmed
-      ?'<select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select>'
-      :'<button class="btn-confirm-score" onclick="confirmScore('+t.id+')">✔ 確定</button>'
+    '<td>'+(ir
+      ?'<select class="assignee-select" style="color:#F0A500;font-weight:600" onchange="setReviewer('+t.id+',this.value)">'+MEMBERS.filter(function(m){return m!=='未定';}).map(function(m){return'<option value="'+m+'"'+(t.reviewer===m?' selected':'')+'>'+m+'</option>';}).join('')+'</select>'
+      :t.scoreConfirmed
+        ?'<select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssignee('+t.id+',this.value)"><option value="">-</option>'+memberOpts+'</select>'
+        :'<button class="btn-confirm-score" onclick="confirmScore('+t.id+')">✔ 確定</button>'
     )+'</td>'+
     '<td>'+dlCell+'</td>'+
     '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
