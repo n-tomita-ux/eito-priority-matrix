@@ -1027,6 +1027,7 @@ function makeMemberRow(t, pName) {
         ?'<select class="assignee-select" style="color:'+assigneeColor+';font-weight:'+(assigneeColor!=='inherit'?'600':'400')+'" onchange="setAssigneeMember('+t.id+',\''+escHtml(pName)+'\',this.value)"><option value="">-</option>'+memberOpts+'</select>'
         :'<button class="btn-confirm-score" onclick="confirmScoreMember('+t.id+',\''+escHtml(pName)+'\')">✔ 確定</button>'
     )+'</td>'+
+    '<td>'+dlCell+'</td>'+
     '<td class="hide-sp"><span class="created-at">'+createdStr+'</span></td>'+
     '<td>'+actionCell+'</td>'+
     '<td>'+memoBtn+'</td>'+
