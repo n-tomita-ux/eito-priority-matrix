@@ -411,6 +411,19 @@ function loadTemplates() {
     .then(function(json){ if(json.ok) templates = json.data || []; })
     .catch(function(){});
 }
+
+function loadMembers() {
+  return fetch(GAS_URL + '?action=getMembers')
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      if(json.ok && json.data && json.data.length > 0) {
+        var names = json.data.filter(function(n){ return n !== '未定'; });
+        names.push('未定');
+        MEMBERS = names;
+      }
+    })
+    .catch(function(){});
+}
 function getCurrentKoki() {
   return projectMaster.find(function(p){ return p.name === currentProject; }) || null;
 }
@@ -700,7 +713,7 @@ window.addEventListener('beforeunload', function(){ stopAutoReload(); releaseLoc
 window.addEventListener('pagehide',     function(){ stopAutoReload(); releaseLock(); });
 
 const DEFAULT_DB = function(){ return {projects:{'共通':{tasks:[]}}, projectOrder:['共通']}; };
-const MEMBERS    = ['冨田','加藤','佐藤','瀬川','高橋','石井','未定'];
+var MEMBERS = ['冨田','加藤','佐藤','瀬川','高橋','石井','未定']; // GASロード前フォールバック
 const MEMBER_COLORS = {
   '冨田':{border:'#E8819A',bg:'rgba(232,129,154,.18)'},
   '加藤':{border:'#6aaee8',bg:'rgba(106,174,232,.18)'},
@@ -1515,7 +1528,8 @@ document.getElementById('taskInput').addEventListener('keydown',function(e){if(e
 Promise.all([
   fetch(GAS_URL).then(function(r){return r.json();}),
   loadProjectMaster(),
-  loadTemplates()
+  loadTemplates(),
+  loadMembers()
 ]).then(function(results){
   var json=results[0];
   if(json.ok&&json.data&&json.data.projects&&Object.keys(json.data.projects).length>0){
