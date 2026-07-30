@@ -116,6 +116,7 @@ tr.overdue-row:hover td{background:#FBE5DC}
 .overdue-alert-list li:hover{background:#FBDAC9}
 .oa-project{font-size:10px;color:#7A2510;background:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0}
 .oa-name{flex:1;color:#333333;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.oa-assignee{font-size:11px;font-weight:600;flex-shrink:0;white-space:nowrap}
 .oa-days{font-size:11px;color:#E05C32;font-weight:700;flex-shrink:0;white-space:nowrap}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
 .btn{font-size:13px;font-weight:600;padding:8px 20px;border-radius:10px;border:none;cursor:pointer;font-family:inherit}
@@ -1554,9 +1555,13 @@ function checkOverdueAlert(){
   document.getElementById('overdueAlertSub').textContent=overdue.length+'件のタスクが期限切れのまま残っています。タップすると該当タスクにジャンプします。';
   document.getElementById('overdueAlertList').innerHTML=overdue.map(function(x){
     var days=Math.abs(calcDaysLeft(x.task.deadline));
+    var assignee=x.task.assignee||'未定';
+    var mc=MEMBER_COLORS[assignee];
+    var aColor=mc&&mc.border?mc.border:'#6B6860';
     return '<li onclick="jumpToOverdueTask('+x.task.id+',\''+escHtml(x.project).replace(/'/g,"\\'")+'\')">'+
       '<span class="oa-project">'+escHtml(x.project)+'</span>'+
       '<span class="oa-name">'+escHtml(x.task.name)+'</span>'+
+      '<span class="oa-assignee" style="color:'+aColor+'">'+escHtml(assignee)+'</span>'+
       '<span class="oa-days">'+days+'日超過</span></li>';
   }).join('');
   openModal('overdue-alert');
