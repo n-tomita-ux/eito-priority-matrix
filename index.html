@@ -208,7 +208,7 @@ tr.overdue-row:hover td{background:#FBE5DC}
 <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text">データ読み込み中...</div></div>
 
 <div class="header">
-  <div class="header-left"><div class="logo">E</div><div><div class="header-title">優先度マトリクス</div><div class="header-subtitle">有限会社栄都工業</div></div></div>
+  <div class="header-left"><div class="logo">E</div><div><div class="header-title">優先度マトリクス</div><div class="header-subtitle">栄都工業</div></div></div>
   <div class="header-right">
     <a class="header-btn green" href="https://docs.google.com/spreadsheets/d/1kJSLNs2PFeVdUzrmGENqGFhG2WljhJ1qvkTwGTL2Jko/edit" target="_blank">📊 実績</a>
     <button class="header-btn" onclick="openHelp()">? 使い方</button>
@@ -270,7 +270,7 @@ tr.overdue-row:hover td{background:#FBE5DC}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">優先度マトリクス｜栄都工業　Rev20-20260730　©2026 Eito Kogyo</div>
+  <div class="version-bar">優先度マトリクス｜栄都工業　Rev21-20260819　©2026 Eito Kogyo</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -336,7 +336,7 @@ tr.overdue-row:hover td{background:#FBE5DC}
       <ul>
         <li>「🗓️ 工期」ボタンでプロジェクトの工事開始日・終了日を設定</li>
         <li>「📋 テンプレから追加」で共通・プロジェクト別テンプレを一括追加</li>
-        <li>テンプレの期限は「工事開始日＋オフセット日数」で自動計算</li>
+        <li>テンプレの期限は「工期開始日＋オフセット日数」で自動計算</li>
         <li>工期変更時は既存タスクの期限を一括シフトできます</li>
       </ul>
       <h3>期限と評価</h3>
@@ -734,14 +734,14 @@ window.addEventListener('beforeunload', function(){ stopAutoReload(); releaseLoc
 window.addEventListener('pagehide',     function(){ stopAutoReload(); releaseLock(); });
 
 const DEFAULT_DB = function(){ return {projects:{'共通':{tasks:[]}}, projectOrder:['共通']}; };
-var MEMBERS = ['冨田','加藤','佐藤','瀬川','高橋','石井','未定']; // GASロード前フォールバック
+var MEMBERS = ['冨田','加藤','佐藤','瀬川','高橋','荻原','未定']; // GASロード前フォールバック
 const MEMBER_COLORS = {
   '冨田':{border:'#E8819A',bg:'rgba(232,129,154,.18)'},
   '加藤':{border:'#6aaee8',bg:'rgba(106,174,232,.18)'},
   '佐藤':{border:'#6abf8a',bg:'rgba(106,191,138,.18)'},
   '瀬川':{border:'#E8A84A',bg:'rgba(232,168,74,.18)'},
   '高橋':{border:'#9B7FD4',bg:'rgba(155,127,212,.18)'},
-  '石井':{border:'#E05C5C',bg:'rgba(224,92,92,.18)'},
+  '荻原':{border:'#E05C5C',bg:'rgba(224,92,92,.18)'},
   '未定':{border:null,bg:null},
 };
 const Q = {
