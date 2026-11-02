@@ -270,7 +270,7 @@ tr.overdue-row:hover td{background:#FBE5DC}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">優先度マトリクス｜栄都工業　Rev21-20260819　©2026 Eito Kogyo</div>
+  <div class="version-bar">優先度マトリクス｜栄都工業　Rev22-20261102　©2026 Eito Kogyo</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -438,7 +438,14 @@ function loadMembers() {
     .then(function(r){ return r.json(); })
     .then(function(json){
       if(json.ok && json.data && json.data.length > 0) {
-        var names = json.data.filter(function(n){ return n !== '未定'; });
+        var names = [];
+        json.data.forEach(function(d){
+          var name = typeof d === 'string' ? d : (d.name || '');
+          if(!name || name === '未定') return;
+          names.push(name);
+          var hex = toHexColor(typeof d === 'string' ? '' : d.color);
+          if(hex) MEMBER_COLORS[name] = {border:hex, bg:hexToRgba(hex,.18)};
+        });
         names.push('未定');
         MEMBERS = names;
       }
@@ -735,15 +742,25 @@ window.addEventListener('pagehide',     function(){ stopAutoReload(); releaseLoc
 
 const DEFAULT_DB = function(){ return {projects:{'共通':{tasks:[]}}, projectOrder:['共通']}; };
 var MEMBERS = ['冨田','加藤','佐藤','瀬川','高橋','荻原','未定']; // GASロード前フォールバック
-const MEMBER_COLORS = {
-  '冨田':{border:'#E8819A',bg:'rgba(232,129,154,.18)'},
-  '加藤':{border:'#6aaee8',bg:'rgba(106,174,232,.18)'},
-  '佐藤':{border:'#6abf8a',bg:'rgba(106,191,138,.18)'},
-  '瀬川':{border:'#E8A84A',bg:'rgba(232,168,74,.18)'},
-  '高橋':{border:'#9B7FD4',bg:'rgba(155,127,212,.18)'},
-  '荻原':{border:'#E05C5C',bg:'rgba(224,92,92,.18)'},
-  '未定':{border:null,bg:null},
+// 色は社員マスタ「イメージカラー」列から取得（loadMembersで上書き）
+const MEMBER_COLORS = { '未定':{border:null,bg:null} };
+// Googleカレンダーの色名 → 色コード（※ローズ／レモン／ライラックは近似色）
+const CALENDAR_COLORS = {
+  'トマト':'#D50000','フラミンゴ':'#E67C73','ローズ':'#D9668A','ミカン':'#F4511E',
+  'マンゴー':'#F09300','バナナ':'#F6BF26','レモン':'#E4C441','セージ':'#33B679',
+  'バジル':'#0B8043','ピーコック':'#039BE5','ブルーベリー':'#3F51B5','ラベンダー':'#7986CB',
+  'ライラック':'#B39DDB','グレープ':'#8E24AA','グラファイト':'#616161'
 };
+function toHexColor(v){
+  v = String(v||'').trim();
+  if(!v) return '';
+  if(/^#[0-9a-fA-F]{6}$/.test(v)) return v;
+  return CALENDAR_COLORS[v] || '';
+}
+function hexToRgba(hex, a){
+  var n = parseInt(hex.slice(1),16);
+  return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+}
 const Q = {
   A:{label:'🔥今すぐやる',sub:'緊急×重要',bg:'rgba(224,92,50,.13)',fill:'#FFE2D8',border:'#E05C32',text:'#7A2510'},
   B:{label:'📅計画する',sub:'重要・余裕あり',bg:'rgba(124,115,222,.12)',fill:'#E5E1FD',border:'#7C73DE',text:'#3B2E9A'},
