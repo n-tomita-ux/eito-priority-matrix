@@ -284,7 +284,7 @@ tr.overdue-row:hover td{background:#FBE5DC}
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <div class="version-bar">優先度マトリクス｜栄都工業　Rev23-20261111　©2026 Eito Kogyo</div>
+  <div class="version-bar">優先度マトリクス｜栄都工業　Rev24-20261111　©2026 Eito Kogyo</div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -355,8 +355,7 @@ tr.overdue-row:hover td{background:#FBE5DC}
       </ul>
       <h3>期限と評価</h3>
       <ul>
-        <li>期限前に完了 → 通常（100%）</li>
-        <li>期限当日に完了 → 🟠オレンジ（50%）</li>
+        <li>期限日までに完了 → 通常（100%）</li>
         <li>期限切れで完了 → 🔴赤（30%）</li>
         <li>期限なしで完了 → 通常（100%）</li>
       </ul>
@@ -785,6 +784,10 @@ const REVIEW_FILL='#FFF3E0',REVIEW_BORDER='#F0A500',REVIEW_TEXT='#7A3800';
 
 function getQ(u,i){ return u>=50&&i>=50?Q.A:u<50&&i>=50?Q.B:u>=50&&i<50?Q.C:Q.D; }
 function calcScore(u,i){ return Math.round(u*0.45+i*0.55); }
+// 得点は確定時（担当者決定・✔確定）の緊急度・重要度で固定。未確定なら今の値
+function scoreU(t){ return t.baseU!==undefined?t.baseU:t.u; }
+function scoreI(t){ return t.baseI!==undefined?t.baseI:t.i; }
+function taskScore(t){ return calcScore(scoreU(t),scoreI(t)); }
 function nowStr(){ return new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'}); }
 function calcDaysLeft(dl){ if(!dl)return null; var t=new Date();t.setHours(0,0,0,0);var d=new Date(dl);d.setHours(0,0,0,0);return Math.floor((d-t)/864e5); }
 function deadlineUrgency(dl){ var d=calcDaysLeft(dl);if(d===null)return null;if(d<=0)return 100;if(d===1)return 90;if(d===2)return 80;if(d<=5)return 60;return null; }
@@ -797,7 +800,7 @@ function deadlineBadge(dl){
   if(d<=5) return{cls:'dl-3',   label:'あと'+d+'日'};
   return{cls:'dl-ok',label:'あと'+d+'日'};
 }
-function calcEvaluation(dl){ if(!dl)return{label:'通常',rate:100};var d=calcDaysLeft(dl);if(d===null)return{label:'通常',rate:100};if(d===0)return{label:'期限当日完了',rate:50};if(d<0)return{label:'期限切れ完了',rate:30};return{label:'通常',rate:100}; }
+function calcEvaluation(dl){ if(!dl)return{label:'通常',rate:100};var d=calcDaysLeft(dl);if(d===null)return{label:'通常',rate:100};if(d<0)return{label:'期限切れ完了',rate:30};return{label:'通常',rate:100}; }
 function applyDeadlineUrgency(){ Object.values(db.projects).forEach(function(p){ (p.tasks||[]).forEach(function(t){ if(t.status==='review')return;var u=deadlineUrgency(t.deadline);if(u!==null)t.u=u; }); }); }
 function normalizeTask(t){
   if(t.id>idCounter) idCounter=t.id;
@@ -811,7 +814,7 @@ function normalizeTask(t){
 function upsertCalendarEvent(task){
   if(!task.deadline||!task.assignee||task.assignee==='未定') return;
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'upsertEvent',event:{taskName:task.name,project:currentProject,assignee:task.assignee,deadline:task.deadline,score:calcScore(task.u,task.i),eventId:task.calendarEventId||null}})
+    body:JSON.stringify({action:'upsertEvent',event:{taskName:task.name,project:currentProject,assignee:task.assignee,deadline:task.deadline,score:taskScore(task),eventId:task.calendarEventId||null}})
   });
   showToast('📅 カレンダーに登録中...');
 }
@@ -867,18 +870,18 @@ function filteredTasks(){ var tasks=currentTasks();if(!currentFilter)return task
 function sortedTasks(tasks){
   var s=currentSort;
   return tasks.slice().sort(function(a,b){
-    if(s==='score_desc')return calcScore(b.u,b.i)-calcScore(a.u,a.i);
-    if(s==='score_asc') return calcScore(a.u,a.i)-calcScore(b.u,b.i);
+    if(s==='score_desc')return taskScore(b)-taskScore(a);
+    if(s==='score_asc') return taskScore(a)-taskScore(b);
     if(s==='deadline_asc'){var da=a.deadline||'9999',db_=b.deadline||'9999';return da<db_?-1:da>db_?1:0;}
     if(s==='deadline_desc'){var da=a.deadline||'',db_=b.deadline||'';return db_<da?-1:db_>da?1:0;}
     if(s==='created_desc')return(b.createdAt||'')>(a.createdAt||'')?1:-1;
     if(s==='created_asc') return(a.createdAt||'')>(b.createdAt||'')?1:-1;
     if(s==='id_asc') return a.id-b.id;if(s==='id_desc')return b.id-a.id;
-    if(s==='urgency_desc')   return b.u-a.u;if(s==='urgency_asc')   return a.u-b.u;
-    if(s==='importance_desc')return b.i-a.i;if(s==='importance_asc')return a.i-b.i;
-    if(s==='action_asc'){var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;return ar-br||calcScore(b.u,b.i)-calcScore(a.u,a.i);}
-    if(s==='action_desc'){var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;return br-ar||calcScore(b.u,b.i)-calcScore(a.u,a.i);}
-    return calcScore(b.u,b.i)-calcScore(a.u,a.i);
+    if(s==='urgency_desc')   return scoreU(b)-scoreU(a);if(s==='urgency_asc')   return scoreU(a)-scoreU(b);
+    if(s==='importance_desc')return scoreI(b)-scoreI(a);if(s==='importance_asc')return scoreI(a)-scoreI(b);
+    if(s==='action_asc'){var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;return ar-br||taskScore(b)-taskScore(a);}
+    if(s==='action_desc'){var ar=a.status==='review'?0:1,br=b.status==='review'?0:1;return br-ar||taskScore(b)-taskScore(a);}
+    return taskScore(b)-taskScore(a);
   });
 }
 
@@ -1006,13 +1009,13 @@ function renderMemberList() {
     var s = currentSort;
     if(s==='project_asc')  return a.project<b.project?-1:a.project>b.project?1:0;
     if(s==='project_desc') return b.project<a.project?-1:b.project>a.project?1:0;
-    if(s==='score_desc')   return calcScore(b.task.u,b.task.i)-calcScore(a.task.u,a.task.i);
-    if(s==='score_asc')    return calcScore(a.task.u,a.task.i)-calcScore(b.task.u,b.task.i);
+    if(s==='score_desc')   return taskScore(b.task)-taskScore(a.task);
+    if(s==='score_asc')    return taskScore(a.task)-taskScore(b.task);
     if(s==='deadline_asc') { var da=a.task.deadline||'9999',db_=b.task.deadline||'9999'; return da<db_?-1:da>db_?1:0; }
     if(s==='deadline_desc'){ var da=a.task.deadline||'',   db_=b.task.deadline||'';    return db_<da?-1:db_>da?1:0; }
     if(s==='created_desc') return (b.task.createdAt||'')>(a.task.createdAt||'')?1:-1;
     if(s==='created_asc')  return (a.task.createdAt||'')>(b.task.createdAt||'')?1:-1;
-    return calcScore(b.task.u,b.task.i)-calcScore(a.task.u,a.task.i);
+    return taskScore(b.task)-taskScore(a.task);
   });
 
   var unassigned = allPairs.filter(function(p){ return !p.task.assignee||p.task.assignee===''||p.task.assignee==='未定'; });
@@ -1083,8 +1086,8 @@ function makeMemberRow(t, pName) {
       (hasMemo?'<br><span style="font-size:10px;color:#9A9893;font-style:italic">'+escHtml(t.memo.slice(0,20))+(t.memo.length>20?'…':'')+'</span>':'')+
     '</td>'+
     '<td>'+projBadge+'</td>'+
-    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.u+'</td>'+
-    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.i+'</td>'+
+    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+dispU+'</td>'+
+    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+dispI+'</td>'+
     '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
     '<td>'+(ir
       ?'<select class="assignee-select" style="color:#F0A500;font-weight:600" onchange="setReviewerMember('+t.id+',\''+escHtml(pName)+'\',this.value)">'+MEMBERS.filter(function(m){return m!=='未定';}).map(function(m){return'<option value="'+m+'"'+(t.reviewer===m?' selected':'')+'>'+m+'</option>';}).join('')+'</select>'
@@ -1176,7 +1179,7 @@ function showOverlapPopup(tasks,px,py){
 function renderDots(){
   document.querySelectorAll('.dot-wrap').forEach(function(e){e.remove();});closeOverlapPopup();
   var tasks=currentTasks();var scoreRanks={};
-  tasks.slice().sort(function(a,b){return calcScore(a.u,a.i)-calcScore(b.u,b.i);}).forEach(function(t,i){scoreRanks[t.id]=i+1;});
+  tasks.slice().sort(function(a,b){return taskScore(a)-taskScore(b);}).forEach(function(t,i){scoreRanks[t.id]=i+1;});
   var THRESHOLD=14,grouped={};
   tasks.forEach(function(t){
     var pos=valToPx(t.u,t.i),key=null;
@@ -1291,7 +1294,7 @@ function setDeadline(id,val){
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   task.deadline=val;
   if(task.status!=='review'){var u=deadlineUrgency(val);if(u!==null)task.u=u;}
-  if(!task.baseU&&task.assignee&&task.assignee!=='未定'){task.baseU=task.u;task.baseI=task.i;}
+  if(task.baseU===undefined&&task.assignee&&task.assignee!=='未定'){task.baseU=task.u;task.baseI=task.i;}
   upsertCalendarEvent(task);renderDots();renderList();scheduleSave();
 }
 function setReviewer(id,val){
@@ -1310,7 +1313,7 @@ function setAssignee(id,val){
   if(wrap._readOnly){showToast('🔒 読み取り専用のため変更できません');renderList();return;}
   var task=currentTasks().find(function(t){return t.id===id;});if(!task)return;
   task.assignee=val;
-  if(!task.baseU&&task.deadline&&val&&val!=='未定'){task.baseU=task.u;task.baseI=task.i;}
+  if(task.baseU===undefined&&task.deadline&&val&&val!=='未定'){task.baseU=task.u;task.baseI=task.i;}
   upsertCalendarEvent(task);renderDots();scheduleSave();
 }
 
@@ -1357,8 +1360,8 @@ function makeRow(t,allTasks){
       '<span class="task-name" title="ダブルクリックで編集">'+escHtml(t.name)+'</span>'+
       (hasMemo?'<br><span style="font-size:10px;color:#9A9893;font-style:italic">'+escHtml(t.memo.slice(0,20))+(t.memo.length>20?'…':'')+'</span>':'')+
     '</td>'+
-    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.u+'</td>'+
-    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+t.i+'</td>'+
+    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+dispU+'</td>'+
+    '<td class="hide-sp" style="font-size:12px;color:'+qText2+';font-weight:600;text-align:center">'+dispI+'</td>'+
     '<td><div class="score-wrap"><div class="score-bar-bg"><div style="'+barSt+'"></div></div><span style="'+numSt+'">'+score+'</span></div></td>'+
     '<td>'+(ir
       ?'<select class="assignee-select" style="color:#F0A500;font-weight:600" onchange="setReviewer('+t.id+',this.value)">'+MEMBERS.filter(function(m){return m!=='未定';}).map(function(m){return'<option value="'+m+'"'+(t.reviewer===m?' selected':'')+'>'+m+'</option>';}).join('')+'</select>'
@@ -1413,7 +1416,7 @@ function confirmReview(){
   scheduleSave();
   showToast('🔲 「'+task.name+'」を'+reviewer+'に確認依頼しました');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'review',review:{taskName:task.name,project:pName,requester:task.assignee||'未定',reviewer:reviewer,deadline:task.deadline||'',score:calcScore(task.u,task.i)}})
+    body:JSON.stringify({action:'review',review:{taskName:task.name,project:pName,requester:task.assignee||'未定',reviewer:reviewer,deadline:task.deadline||'',score:taskScore(task)}})
   });
 }
 function openSendback(id){
@@ -1437,7 +1440,7 @@ function confirmSendback(){
   scheduleSave();
   showToast('↩️ 「'+task.name+'」を'+newAssignee+'に差し戻しました（'+task.sendbackCount+'回目）');
   fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'sendback',sendback:{taskName:task.name,project:pName,fromAssignee:fromAssignee,newAssignee:newAssignee,score:calcScore(task.u,task.i),sendbackCount:task.sendbackCount}})
+    body:JSON.stringify({action:'sendback',sendback:{taskName:task.name,project:pName,fromAssignee:fromAssignee,newAssignee:newAssignee,score:taskScore(task),sendbackCount:task.sendbackCount}})
   });
   var saved=currentProject;currentProject=pName;upsertCalendarEvent(task);currentProject=saved;
 }
